@@ -42,7 +42,7 @@
         .form-group label { margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #4b5563; }
         input, select, textarea { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 15px; }
         
-        /* 滾動表格樣式（解決無限多排問題） */
+        /* 滾動表格樣式 */
         .table-container { max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: left; background: white; }
         th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
@@ -63,7 +63,6 @@
 </head>
 <body>
 
-    <!-- 1. 網站環境通關驗證 -->
     <div id="site-auth-overlay" class="overlay">
         <div class="login-box">
             <h2>PIPI TOYS 雲端安全驗證</h2>
@@ -73,7 +72,6 @@
         </div>
     </div>
 
-    <!-- 2. 員工登入層 -->
     <div id="login-overlay" class="overlay" style="display: none;">
         <div class="login-box">
             <h2>員工登入系統</h2>
@@ -83,7 +81,6 @@
         </div>
     </div>
 
-    <!-- 3. POS 主畫面系統 -->
     <nav>
         <div class="brand">PIPI TOYS 雲端版</div>
         <button onclick="switchTab('tab-checkout')" id="nav-checkout" class="active">🛒 收銀結帳</button>
@@ -100,7 +97,6 @@
             <div id="user-info" style="color: #4b5563;">操作人員：未登入</div>
         </header>
 
-        <!-- 分頁 1：收銀結帳 -->
         <div id="tab-checkout" class="content-area active">
             <div class="card">
                 <h2>收銀結帳系統 (滾動無限排)</h2>
@@ -111,10 +107,12 @@
                     </div>
                     <div class="form-group">
                         <label>付款方式</label>
-                        <select id="checkout-payment">
+                        <select id="checkout-payment" onchange="renderCheckoutCart()">
                             <option value="現金">現金</option>
-                            <option value="信用卡">信用卡</option>
-                            <option value="LINE Pay">LINE Pay</option>
+                            <option value="轉帳">轉帳</option>
+                            <option value="信用卡">信用卡 (+$3%)</option>
+                            <option value="LINE Pay">LINE Pay (+$3%)</option>
+                            <option value="橘子支付">橘子支付 (+$3%)</option>
                         </select>
                     </div>
                 </div>
@@ -137,6 +135,7 @@
 
                 <div style="margin-top: 20px; text-align: right; font-size: 22px; font-weight: bold;">
                     總計金額：<span id="checkout-total" style="color: #ef4444;">$0</span>
+                    <span id="fee-note" style="font-size: 14px; color: #6b7280; font-weight: normal; margin-left: 10px;"></span>
                 </div>
                 <div style="margin-top: 15px; text-align: right;">
                     <button class="btn btn-success" style="font-size: 18px; padding: 12px 30px;" onclick="submitCheckout()">確認結帳並存檔</button>
@@ -144,7 +143,6 @@
             </div>
         </div>
 
-        <!-- 分頁 2：商品進貨 -->
         <div id="tab-receive" class="content-area">
             <div class="card">
                 <h2>商品進貨作業 (更新庫存與成本)</h2>
@@ -182,14 +180,12 @@
             </div>
         </div>
 
-        <!-- 分頁 3：建立商品 -->
         <div id="tab-create" class="content-area">
             <div class="sub-tabs">
                 <button class="sub-tab active" onclick="switchSubTab('create','single')">1. 線上單筆建立</button>
                 <button class="sub-tab" onclick="switchSubTab('create','batch')">2. Excel 表格批次建立</button>
             </div>
 
-            <!-- 單筆建立 -->
             <div id="sub-create-single" class="sub-content active">
                 <div class="card">
                     <h2>新增單筆商品基本資料</h2>
@@ -221,7 +217,6 @@
                 </div>
             </div>
 
-            <!-- 批次建立 -->
             <div id="sub-create-batch" class="sub-content">
                 <div class="card">
                     <h2>從 Excel 貼上大批商品資料</h2>
@@ -235,14 +230,12 @@
             </div>
         </div>
 
-        <!-- 分頁 4：同行管理 -->
         <div id="tab-peer" class="content-area">
             <div class="sub-tabs">
                 <button class="sub-tab active" onclick="switchSubTab('peer','manage')">1. 同行代碼與名稱建立</button>
                 <button class="sub-tab" onclick="switchSubTab('peer','adj')">2. 同行調貨作業</button>
             </div>
 
-            <!-- 同行管理 -->
             <div id="sub-peer-manage" class="sub-content active">
                 <div class="card">
                     <h2>建立同行基本名單</h2>
@@ -260,7 +253,6 @@
                 </div>
             </div>
 
-            <!-- 同行調貨 -->
             <div id="sub-peer-adj" class="sub-content">
                 <div class="card">
                     <h2>同行調貨多排清單作業</h2>
@@ -302,7 +294,6 @@
             </div>
         </div>
 
-        <!-- 分頁 5：營業報表 -->
         <div id="tab-report" class="content-area">
             <div class="card">
                 <h2>今日營業與利潤統計報表</h2>
@@ -329,7 +320,6 @@
             </div>
         </div>
 
-        <!-- 分頁 6：新增員工 -->
         <div id="tab-emp" class="content-area">
             <div class="card">
                 <h2>註冊新員工收銀帳號</h2>
@@ -356,7 +346,6 @@
         // 頁面初始化與安全驗證
         function verifySiteAccess() {
             const pw = document.getElementById('site-password').value;
-            // 前端直接驗證，密碼設定為 Pipi25508846
             if (pw === 'Pipi25508846') { 
                 document.getElementById('site-auth-overlay').style.display = 'none';
                 document.getElementById('login-overlay').style.display = 'flex';
@@ -381,7 +370,6 @@
                 currentEmployee = data.employee.emp_id;
                 document.getElementById('user-info').innerText = `操作人員：${currentEmployee}`;
                 document.getElementById('login-overlay').style.display = 'none';
-                // 初始化今日報表日期與加載同行下拉選單
                 document.getElementById('report-date').value = new Date().toISOString().split('T')[0];
                 loadPeerDropdown();
                 loadReport();
@@ -433,9 +421,10 @@
         function renderCheckoutCart() {
             const tbody = document.getElementById('checkout-list');
             tbody.innerHTML = '';
-            let total = 0;
+            let subtotalSum = 0;
+            
             checkoutCart.forEach((item, index) => {
-                total += item.subtotal;
+                subtotalSum += item.subtotal;
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.name}</td>
@@ -447,7 +436,22 @@
                     </tr>
                 `;
             });
-            document.getElementById('checkout-total').innerText = `$${total}`;
+
+            // 讀取當前付款方式
+            const paymentMethod = document.getElementById('checkout-payment').value;
+            let finalTotal = subtotalSum;
+            const noteEl = document.getElementById('fee-note');
+
+            // 只有「信用卡」、「LINE Pay」、「橘子支付」要乘以 1.03
+            if (paymentMethod === '信用卡' || paymentMethod === 'LINE Pay' || paymentMethod === '橘子支付') {
+                finalTotal = Math.round(subtotalSum * 1.03);
+                noteEl.innerText = `(原價 $${subtotalSum} + 3% 手續費)`;
+            } else {
+                // 現金、轉帳維持原價
+                noteEl.innerText = '';
+            }
+
+            document.getElementById('checkout-total').innerText = `$${finalTotal}`;
         }
 
         function updateCartQty(index, val) {
@@ -464,12 +468,14 @@
 
         function submitCheckout() {
             if(checkoutCart.length === 0) { alert('購物車內沒有商品！'); return; }
+            const paymentMethod = document.getElementById('checkout-payment').value;
+            
             fetch('/api/sales/checkout', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     emp_id: currentEmployee,
-                    payment_method: document.getElementById('checkout-payment').value,
+                    payment_method: paymentMethod,
                     items: checkoutCart
                 })
             })
@@ -556,7 +562,7 @@
             const products = [];
             
             lines.forEach(line => {
-                const cols = line.split('\t'); // Excel 複製出來預設是 Tab 分隔
+                const cols = line.split('\t'); 
                 if(cols.length >= 3) {
                     products.push({
                         barcode: cols[0]?.trim(),
