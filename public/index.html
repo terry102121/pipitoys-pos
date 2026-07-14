@@ -63,6 +63,7 @@
 </head>
 <body>
 
+    <!-- 1. 網站環境通關驗證 -->
     <div id="site-auth-overlay" class="overlay">
         <div class="login-box">
             <h2>PIPI TOYS 雲端安全驗證</h2>
@@ -72,6 +73,7 @@
         </div>
     </div>
 
+    <!-- 2. 員工登入層 -->
     <div id="login-overlay" class="overlay" style="display: none;">
         <div class="login-box">
             <h2>員工登入系統</h2>
@@ -81,6 +83,7 @@
         </div>
     </div>
 
+    <!-- 3. POS 主畫面系統 -->
     <nav>
         <div class="brand">PIPI TOYS 雲端版</div>
         <button onclick="switchTab('tab-checkout')" id="nav-checkout" class="active">🛒 收銀結帳</button>
@@ -97,6 +100,7 @@
             <div id="user-info" style="color: #4b5563;">操作人員：未登入</div>
         </header>
 
+        <!-- 分頁 1：收銀結帳 -->
         <div id="tab-checkout" class="content-area active">
             <div class="card">
                 <h2>收銀結帳系統 (滾動無限排)</h2>
@@ -140,6 +144,7 @@
             </div>
         </div>
 
+        <!-- 分頁 2：商品進貨 -->
         <div id="tab-receive" class="content-area">
             <div class="card">
                 <h2>商品進貨作業 (更新庫存與成本)</h2>
@@ -177,12 +182,14 @@
             </div>
         </div>
 
+        <!-- 分頁 3：建立商品 -->
         <div id="tab-create" class="content-area">
             <div class="sub-tabs">
                 <button class="sub-tab active" onclick="switchSubTab('create','single')">1. 線上單筆建立</button>
                 <button class="sub-tab" onclick="switchSubTab('create','batch')">2. Excel 表格批次建立</button>
             </div>
 
+            <!-- 單筆建立 -->
             <div id="sub-create-single" class="sub-content active">
                 <div class="card">
                     <h2>新增單筆商品基本資料</h2>
@@ -214,6 +221,7 @@
                 </div>
             </div>
 
+            <!-- 批次建立 -->
             <div id="sub-create-batch" class="sub-content">
                 <div class="card">
                     <h2>從 Excel 貼上大批商品資料</h2>
@@ -227,12 +235,14 @@
             </div>
         </div>
 
+        <!-- 分頁 4：同行管理 -->
         <div id="tab-peer" class="content-area">
             <div class="sub-tabs">
                 <button class="sub-tab active" onclick="switchSubTab('peer','manage')">1. 同行代碼與名稱建立</button>
                 <button class="sub-tab" onclick="switchSubTab('peer','adj')">2. 同行調貨作業</button>
             </div>
 
+            <!-- 同行管理 -->
             <div id="sub-peer-manage" class="sub-content active">
                 <div class="card">
                     <h2>建立同行基本名單</h2>
@@ -250,6 +260,7 @@
                 </div>
             </div>
 
+            <!-- 同行調貨 -->
             <div id="sub-peer-adj" class="sub-content">
                 <div class="card">
                     <h2>同行調貨多排清單作業</h2>
@@ -291,6 +302,7 @@
             </div>
         </div>
 
+        <!-- 分頁 5：營業報表 -->
         <div id="tab-report" class="content-area">
             <div class="card">
                 <h2>今日營業與利潤統計報表</h2>
@@ -317,6 +329,7 @@
             </div>
         </div>
 
+        <!-- 分頁 6：新增員工 -->
         <div id="tab-emp" class="content-area">
             <div class="card">
                 <h2>註冊新員工收銀帳號</h2>
@@ -343,17 +356,13 @@
         // 頁面初始化與安全驗證
         function verifySiteAccess() {
             const pw = document.getElementById('site-password').value;
-            fetch('/api/verify-site-access', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ password: pw })
-            })
-            .then(res => res.json())
-            .then(data => {
+            // 前端直接驗證，密碼設定為 Pipi25508846
+            if (pw === 'Pipi25508846') { 
                 document.getElementById('site-auth-overlay').style.display = 'none';
                 document.getElementById('login-overlay').style.display = 'flex';
-            })
-            .catch(err => alert('通關密碼錯誤，請重新確認！'));
+            } else {
+                alert('通關密碼錯誤！請重新確認。');
+            }
         }
 
         function login() {
@@ -642,4 +651,46 @@
         function submitPeerAdjustment() {
             const pCode = document.getElementById('peer-select-dropdown').value;
             const type = document.getElementById('peer-adj-type').value;
-            if(!pCode) { alert('請選擇同行對
+            if(!pCode) { alert('請選擇同行對象！'); return; }
+            if(peerCart.length === 0) { alert('調貨清單不能為空！'); return; }
+            
+            fetch('/api/peer/adjustment', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ peer_code: pCode, type: type, items: peerCart })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert('🤝 同行調貨雲端同步完成！');
+                peerCart = [];
+                renderPeerCart();
+            });
+        }
+
+        // === 營業報表邏輯 ===
+        function loadReport() {
+            const date = document.getElementById('report-date').value;
+            fetch(`/api/reports/summary?date=${date}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('rep-revenue').innerText = `$${data.total_revenue}`;
+                document.getElementById('rep-profit').innerText = `$${data.total_profit}`;
+                document.getElementById('rep-orders').innerText = `${data.total_orders} 單 / ${data.total_qty} 件`;
+            });
+        }
+
+        // === 註冊員工帳號 ===
+        function submitAddEmployee() {
+            const id = document.getElementById('new-emp-id').value.trim();
+            const pw = document.getElementById('new-emp-password').value;
+            fetch('/api/employees/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ emp_id: id, password: pw })
+            })
+            .then(res => res.json())
+            .then(data => { alert(data.message); });
+        }
+    </script>
+</body>
+</html>
