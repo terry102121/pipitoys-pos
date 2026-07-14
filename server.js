@@ -92,4 +92,88 @@ app.post('/api/product/create', async (req, res) => {
         await client.query('COMMIT');
         res.json({ success: true, message: `成功建檔/更新 ${products.length} 筆商品！` });
     } catch (err) {
-        await client.query('ROLLBACK'); res.status(
+        await client.query('ROLLBACK'); res.status(500).json({ success: false, error: err.message });
+    } finally { client.release(); }
+});
+
+// 5. 結帳 (無限排，加入成本紀錄以算利潤)
+app.post('/api/sales/checkout', async (req, res) => {
+    const { emp_id, payment_method, items } = req.body;
+    const dateStr = new Date().toISOString().split('T')[0];
+    if (!items || items.length === 0) return res.status(400).json({ success: false, message: "明細不能為空" });
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        let total_qty = 0, total_amount = 0, total_cost = 0;
+        
+        // 計算總額與抓取成本
+        for (let item of items) {
+            const pRes = await client.query(`SELECT avg_cost FROM products WHERE barcode = $1`, [item.barcode]);
+            const unitCost = pRes.rows.length > 0 ? pRes.rows[0].avg_cost : 0;
+            item.cost = unitCost;
+            total_qty += item.qty;
+            total_amount += item.subtotal;
+            total_cost += (unitCost * item.qty);
+        }
+
+        const saleResult = await client.query(`INSERT INTO sales (sale_date, emp_id, payment_method, total_qty, total_amount, total_cost, sales_channel) VALUES ($1, $2, $3, $4, $5, $6, '店面') RETURNING sale_id`, [dateStr, emp_id, payment_method, total_qty, total_amount, total_cost]);
+        const saleId = saleResult.rows[0].sale_id;
+        
+        for (let item of items) {
+            await client.query(`INSERT INTO sale_items (sale_id, barcode, price, cost, quantity, subtotal, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [saleId, item.barcode, item.price, item.cost, item.qty, item.subtotal, '']);
+            await client.query(`UPDATE products SET stock = stock - $1 WHERE barcode = $2`, [item.qty, item.barcode]);
+        }
+        await client.query('COMMIT');
+        res.json({ success: true, message: "結帳成功！", sale_id: saleId });
+    } catch (err) {
+        await client.query('ROLLBACK'); res.status(500).json({ success: false, error: err.message });
+    } finally { client.release(); }
+});
+
+// 6. 同行管理與調貨
+app.post('/api/peers/add', async (req, res) => {
+    try {
+        await pool.query(`INSERT INTO peers (peer_code, peer_name) VALUES ($1, $2) ON CONFLICT (peer_code) DO UPDATE SET peer_name = $2`, [req.body.peer_code, req.body.peer_name]);
+        res.json({ success: true, message: "同行資料更新成功" });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+app.get('/api/peers/list', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT * FROM peers ORDER BY peer_code ASC`);
+        res.json({ success: true, peers: rows });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+app.post('/api/peer/adjustment', async (req, res) => {
+    const { peer_code, items, type } = req.body; // items 為陣列
+    const dateStr = new Date().toISOString().split('T')[0];
+    const stockMultiplier = (type === '調入') ? 1 : -1;
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        for(let item of items) {
+            await client.query(`UPDATE products SET stock = stock + $1 WHERE barcode = $2`, [item.qty * stockMultiplier, item.barcode]);
+            await client.query(`INSERT INTO peer_adjustments (barcode, peer_code, quantity, type, adj_date) VALUES ($1, $2, $3, $4, $5)`, [item.barcode, peer_code, item.qty, type, dateStr]);
+        }
+        await client.query('COMMIT');
+        res.json({ success: true, message: "同行調貨完成！" });
+    } catch (err) {
+        await client.query('ROLLBACK'); res.status(500).json({ success: false, error: err.message });
+    } finally { client.release(); }
+});
+
+// 7. 報表 (包含毛利)
+app.get('/api/reports/summary', async (req, res) => {
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+    try {
+        const { rows } = await pool.query(`SELECT * FROM sales WHERE sale_date = $1`, [date]);
+        let tq = 0, tr = 0, tc = 0;
+        rows.forEach(r => { tq += r.total_qty; tr += r.total_amount; tc += (r.total_cost || 0); });
+        res.json({ success: true, total_orders: rows.length, total_qty: tq, total_revenue: tr, total_profit: tr - tc });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+app.listen(PORT, () => console.log(`🚀 終極版伺服器啟動於 ${PORT}`));
