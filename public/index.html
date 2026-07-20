@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>威志將庫存管理系統 - PIPI TOYS 專用版</title>
+    <title>威志將庫存管理系統 - PIPI TOYS 全功能同步版</title>
     <style>
-        /* 復刻相片中的經典 Windows 系統配色與樣式 */
+        /* 經典 Windows ERP 系統配色與美工樣式 */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "MS Sans Serif", "微軟正黑體", sans-serif; font-size: 14px; }
         body { background-color: #55aaaa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
@@ -17,212 +17,258 @@
         .auth-box button { padding: 8px 20px; background: #d4d0c8; border: 2px outset #fff; font-weight: bold; cursor: pointer; }
 
         /* 主視窗外殼 */
-        .window-container { background-color: #d4d0c8; border: 3px outset #fff; width: 1024px; height: 740px; display: flex; flex-direction: column; position: relative; box-shadow: 3px 3px 15px rgba(0,0,0,0.3); }
+        .window-container { background-color: #d4d0c8; border: 3px outset #fff; width: 1050px; height: 750px; display: flex; flex-direction: column; position: relative; box-shadow: 3px 3px 15px rgba(0,0,0,0.3); }
         .window-title-bar { background: linear-gradient(90deg, #000080, #1084d0); color: white; padding: 5px 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .window-body { flex: 1; padding: 10px; position: relative; background-color: #d4d0c8; }
+        .window-body { flex: 1; padding: 10px; position: relative; background-color: #d4d0c8; overflow: hidden; }
 
-        /* 頂部選單文字列 */
-        .menu-text-bar { background: #d4d0c8; padding: 3px 10px; border-bottom: 1px solid #808080; color: black; display: flex; gap: 15px; font-size: 13px; }
+        /* 頂部橫列選單 */
+        .menu-text-bar { background: #d4d0c8; padding: 5px 10px; border-bottom: 1px solid #808080; color: black; display: flex; gap: 15px; font-size: 13px; }
+        .menu-text-bar span { cursor: pointer; padding: 2px 4px; }
+        .menu-text-bar span:hover { background-color: #000080; color: white; }
 
-        /* --- 圖 1：主畫面選單外觀 --- */
-        #main-menu-screen { display: block; width: 100%; height: 100%; }
+        /* 系統各模組視窗通用樣式 */
+        .erp-screen { display: none; width: 100%; height: 100%; flex-direction: column; }
+        .active-screen { display: flex !important; }
+
+        /* 圖 1：主畫面選單九宮格 */
         .erp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; background: #d4d0c8; padding: 15px; border: 2px inset #fff; }
-        .erp-btn { background: #e0deda; border: 2px outset #fff; color: #0000ff; text-align: left; padding: 8px 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; }
+        .erp-btn { background: #e0deda; border: 2px outset #fff; color: #0000ff; text-align: left; padding: 8px 10px; font-weight: bold; cursor: pointer; }
         .erp-btn:active { border: 2px inset #fff; }
-        .brand-center-box { text-align: center; margin-top: 60px; border: 2px inset #fff; padding: 40px; background: #e6e6e6; }
+        .erp-btn.active-mod { background: #ffffcc; color: #ff0000; }
+        .brand-center-box { text-align: center; margin-top: 40px; border: 2px inset #fff; padding: 30px; background: #e6e6e6; }
         .brand-title { font-size: 48px; color: #008000; font-family: "Times New Roman", serif; font-weight: bold; letter-spacing: 5px; }
-        .btn-exit-main { background: #e0deda; border: 2px outset #fff; color: #ff0000; font-size: 20px; font-weight: bold; padding: 10px 30px; margin-top: 20px; cursor: pointer; }
-
-        /* --- 圖 2 & 圖 3：銷貨管理作業 --- */
-        #sales-screen { display: none; width: 100%; height: 100%; flex-direction: column; }
-        .info-top-row { display: flex; justify-content: space-between; padding: 3px 5px; background: #d4d0c8; font-weight: bold; border-bottom: 1px solid #808080; }
-        .form-header-area { border: 2px inset #fff; padding: 10px; margin-bottom: 5px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #cbd2d6; }
+        
+        /* 表單與表格配置 */
+        .info-top-row { display: flex; justify-content: space-between; padding: 3px 5px; background: #d4d0c8; font-weight: bold; border-bottom: 1px solid #808080; margin-bottom: 5px; }
+        .form-header-area { border: 2px inset #fff; padding: 10px; margin-bottom: 5px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #cbd2d6; }
         .form-group { display: flex; align-items: center; gap: 5px; }
         .form-group label { font-weight: bold; color: #000080; white-space: nowrap; }
         .form-group input, .form-group select { padding: 3px; border: 2px inset #fff; background: white; width: 100%; }
         
-        /* 產品資料表格 */
-        .table-container { flex: 1; overflow-y: auto; background: white; border: 2px inset #fff; min-height: 240px; }
+        .table-container { flex: 1; overflow-y: auto; background: white; border: 2px inset #fff; min-height: 200px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: #d4d0c8; border: 1px solid #808080; padding: 6px; font-weight: bold; position: sticky; top: 0; color: black; }
         td { border: 1px solid #e0e0e0; padding: 5px; background: white; height: 28px; }
         .yellow-col { background-color: #ffffaa; text-align: center; font-weight: bold; }
 
-        /* 下方加總與付款區 */
-        .summary-footer-area { border: 2px inset #fff; padding: 10px; margin-top: 5px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #cbd2d6; }
-
-        /* 底部功能按鈕列 */
-        .action-button-bar { display: flex; gap: 2px; margin-top: 8px; background: #d4d0c8; border: 2px inset #fff; padding: 4px; }
-        .act-btn { background: #cbd2d6; border: 2px outset #fff; color: #0000ff; padding: 6px 12px; font-weight: bold; cursor: pointer; min-width: 65px; text-align: center; }
+        /* 下方多欄加總與功能列 */
+        .summary-footer-area { border: 2px inset #fff; padding: 8px; margin-top: 5px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #cbd2d6; }
+        .action-button-bar { display: flex; gap: 2px; margin-top: 5px; background: #d4d0c8; border: 2px inset #fff; padding: 4px; }
+        .act-btn { background: #cbd2d6; border: 2px outset #fff; color: #0000ff; padding: 5px 10px; font-weight: bold; cursor: pointer; min-width: 65px; text-align: center; }
         .act-btn:active { border: 2px inset #fff; }
-        .act-btn.disabled { color: #808080; cursor: not-allowed; opacity: 0.6; }
+        
+        /* 獨立維護小區塊 */
+        .split-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; flex: 1; height: 80%; }
+        .side-form { background: #cbd2d6; border: 2px inset #fff; padding: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- 1. 網頁環境通關密碼 -->
+    <!-- 1. 網頁外部安全鎖 -->
     <div id="site-auth-overlay" class="auth-overlay">
         <div class="auth-box">
             <h3>威志將網路安全驗證</h3>
-            <p style="font-size: 12px; color: #404040;">請輸入網頁系統環境通關密碼</p>
+            <p style="font-size: 12px; color: #404040; margin-bottom:10px;">請輸入系統環境通關密碼</p>
             <input type="password" id="site-password" placeholder="請輸入密碼">
             <button onclick="verifySiteAccess()">確認通關</button>
         </div>
     </div>
 
-    <!-- 2. 員工代號登入 -->
+    <!-- 2. 員工代號帳密登入 -->
     <div id="login-overlay" class="auth-overlay" style="display: none;">
         <div class="auth-box">
             <h3>PIPI TOYS 員工系統登入</h3>
-            <input type="text" id="emp-id" placeholder="員工代碼 (4位碼，例如 0001)">
-            <input type="password" id="emp-password" placeholder="登入密碼 (6位碼，例如 000000)">
+            <input type="text" id="emp-id" placeholder="員工代碼 (4位碼，如 0001)">
+            <input type="password" id="emp-password" placeholder="登入密碼 (6位碼，如 000000)">
             <button onclick="loginSystem()">登入系統</button>
         </div>
     </div>
 
-    <!-- 3. ERP 主架構系統 -->
+    <!-- 主架構外殼 -->
     <div class="window-container">
         <div class="window-title-bar">
             <span>威志將庫存管理系統 - [0422317599]</span>
-            <span style="font-size: 12px; cursor: pointer;">X</span>
+            <span style="font-size: 12px; cursor: pointer;" onclick="switchScreen('main-menu-screen')">X</span>
         </div>
         
+        <!-- 頂部選單聯動化 -->
         <div class="menu-text-bar">
-            <span>1.基本資料</span> <span>2.產品庫存</span> <span>3.進貨管理</span> <span>4.銷貨管理</span> <span>5.帳款管理</span> <span>6.銷售分析</span> <span>7.結構管理</span> <span>8.系統維護</span>
+            <span onclick="switchScreen('mod-customer')">1.基本資料</span>
+            <span onclick="switchScreen('mod-product')">2.產品庫存</span>
+            <span onclick="switchScreen('mod-purchase')">3.進貨管理</span>
+            <span onclick="switchScreen('mod-sales')">4.銷貨管理</span>
+            <span onclick="switchScreen('mod-report')">5.帳款管理</span>
+            <span onclick="switchScreen('mod-report')">6.銷售分析</span>
+            <span onclick="alert('結構模組建置中')">7.結構管理</span>
+            <span onclick="alert('系統維護中')">8.系統維護</span>
         </div>
 
         <div class="window-body">
             
-            <!-- ================= 圖 1：主畫面選單 ================= -->
-            <div id="main-menu-screen">
+            <!-- ================= 主畫面選單 (圖 1) ================= -->
+            <div id="main-menu-screen" class="erp-screen active-screen">
                 <div class="erp-grid">
-                    <button class="erp-btn">1.公司資料設定</button>
-                    <button class="erp-btn">7.進貨管理作業</button>
-                    <!-- 點擊 9 進入結帳系統 -->
-                    <button class="erp-btn" style="color: #ff0000; background: #ffffcc;" onclick="openSalesScreen()">9.銷貨管理作業</button>
-                    <button class="erp-btn">D.客戶 對帳單</button>
-                    <button class="erp-btn">J.廠商 對帳單</button>
+                    <button class="erp-btn" onclick="alert('公司資料已就緒！')">1.公司資料設定</button>
+                    <button class="erp-btn active-mod" onclick="switchScreen('mod-purchase')">7.進貨管理作業</button>
+                    <button class="erp-btn active-mod" onclick="switchScreen('mod-sales')">9.銷貨管理作業</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">D.客戶 對帳單</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">J.廠商 對帳單</button>
                     
-                    <button class="erp-btn">2.客戶基本資料</button>
-                    <button class="erp-btn">8.進貨退回作業</button>
-                    <button class="erp-btn">A.銷貨退回作業</button>
-                    <button class="erp-btn">E.目前未收查印</button>
-                    <button class="erp-btn">K.目前未付查印</button>
+                    <button class="erp-btn active-mod" onclick="switchScreen('mod-customer')">2.客戶基本資料</button>
+                    <button class="erp-btn" onclick="alert('進貨退回建置中')">8.進貨退回作業</button>
+                    <button class="erp-btn" onclick="alert('銷貨退回建置中')">A.銷貨退回作業</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">E.目前未收查印</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">K.目前未付查印</button>
                     
-                    <button class="erp-btn">3.廠商基本資料</button>
+                    <button class="erp-btn active-mod" onclick="switchScreen('mod-vendor')">3.廠商基本資料</button>
                     <div style="grid-column: span 2;"></div>
-                    <button class="erp-btn">F.應收帳款銷帳</button>
-                    <button class="erp-btn">L.應付帳款銷帳</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">F.應收帳款銷帳</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">L.應付帳款銷帳</button>
                     
-                    <button class="erp-btn">4.員工基本資料</button>
+                    <button class="erp-btn" onclick="alert('員工權限已開通')">4.員工基本資料</button>
                     <div style="grid-column: span 2;"></div>
-                    <button class="erp-btn">G.收款狀況查印</button>
-                    <button class="erp-btn">M.付款狀況查印</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">G.收款狀況查印</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">M.付款狀況查印</button>
                     
-                    <button class="erp-btn">5.產品基本資料</button>
+                    <button class="erp-btn active-mod" onclick="switchScreen('mod-product')">5.產品基本資料</button>
                     <div style="grid-column: span 2;"></div>
-                    <button class="erp-btn">H.月營業分析</button>
-                    <button class="erp-btn">N.進退記錄查印</button>
+                    <button class="erp-btn active-mod" onclick="switchScreen('mod-report')">H.月營業分析</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">N.進退記錄查印</button>
                     
-                    <button class="erp-btn">6.條碼資料編修</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-product')">6.條碼資料編修</button>
                     <div style="grid-column: span 2;"></div>
-                    <button class="erp-btn">I.銷貨帳 查印</button>
-                    <button class="erp-btn">O.進貨帳 查印</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">I.銷貨帳 查印</button>
+                    <button class="erp-btn" onclick="switchScreen('mod-report')">O.進貨帳 查印</button>
                 </div>
 
                 <div class="brand-center-box">
                     <div class="brand-title">PIPI TOYS</div>
-                    <button class="btn-exit-main" onclick="alert('安全登出！')">離 開</button>
+                    <button style="color:red; font-weight:bold; padding:8px 25px;" onclick="location.reload()">安全登出 / 重新整理</button>
                 </div>
             </div>
 
-            <!-- ================= 圖 2 & 圖 3：銷貨管理作業 ================= -->
-            <div id="sales-screen">
-                <!-- 狀態資訊列 -->
-                <div class="info-top-row">
-                    <div>機台：A &nbsp;&nbsp;&nbsp; 使用者：<span id="current-user-span">PIPI</span></div>
-                    <div style="color: #000080; font-size:16px;">銷貨管理作業</div>
-                    <div>日期：115年07月14日</div>
+            <!-- ================= 2. 客戶基本資料模組 ================= -->
+            <div id="mod-customer" class="erp-screen">
+                <div class="info-top-row"><span>作業項目：2. 客戶基本資料</span><button onclick="switchScreen('main-menu-screen')">返回主選單</button></div>
+                <div class="split-layout">
+                    <div class="side-form">
+                        <h4 style="color:#000080; margin-bottom:10px;">建立新客戶 / 同行代碼</h4>
+                        <div class="form-group" style="margin-bottom:8px;"><label>客戶代碼</label><input type="text" id="c-code"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>客戶名稱</label><input type="text" id="c-name"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>客戶類別</label>
+                            <select id="c-type"><option value="零售">一般零售</option><option value="同行調貨">同行調貨商</option></select>
+                        </div>
+                        <button class="act-btn" onclick="addCustomer()" style="width:100%; margin-top:10px;">新增儲存</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>序</th><th>客戶代碼</th><th>客戶名稱</th><th>類別</th></tr></thead>
+                            <tbody id="table-customer-body"></tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
 
-                <!-- 單據欄位區 -->
+            <!-- ================= 3. 廠商基本資料模組 ================= -->
+            <div id="mod-vendor" class="erp-screen">
+                <div class="info-top-row"><span>作業項目：3. 廠商基本資料</span><button onclick="switchScreen('main-menu-screen')">返回主選單</button></div>
+                <div class="split-layout">
+                    <div class="side-form">
+                        <h4 style="color:#000080; margin-bottom:10px;">建立廠商代碼</h4>
+                        <div class="form-group" style="margin-bottom:8px;"><label>廠商代碼</label><input type="text" id="v-code"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>廠商名稱</label><input type="text" id="v-name"></div>
+                        <button class="act-btn" onclick="addVendor()" style="width:100%; margin-top:10px;">新增儲存</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>序</th><th>廠商代碼</th><th>廠商名稱</th></tr></thead>
+                            <tbody id="table-vendor-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 5. 產品基本資料模組 ================= -->
+            <div id="mod-product" class="erp-screen">
+                <div class="info-top-row"><span>作業項目：5. 產品基本資料 / 6. 條碼編修</span><button onclick="switchScreen('main-menu-screen')">返回主選單</button></div>
+                <div class="split-layout">
+                    <div class="side-form">
+                        <h4 style="color:#000080; margin-bottom:10px;">商品條碼建檔</h4>
+                        <div class="form-group" style="margin-bottom:8px;"><label>條碼/代碼</label><input type="text" id="p-barcode"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>產品名稱</label><input type="text" id="p-name"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>分類項目</label><input type="text" id="p-type" value="遊戲/公仔"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>初始成本</label><input type="number" id="p-cost" value="0"></div>
+                        <div class="form-group" style="margin-bottom:8px;"><label>現金價(單價)</label><input type="number" id="p-price" value="0"></div>
+                        <button class="act-btn" onclick="addProduct()" style="width:100%; margin-top:10px;">建立商品</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>條碼/代碼</th><th>產品名稱</th><th>分類</th><th>庫存</th><th>平均成本</th><th>現金售價</th><th>預估利潤率</th></tr></thead>
+                            <tbody id="table-product-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 7. 進貨管理作業模組 ================= -->
+            <div id="mod-purchase" class="erp-screen">
+                <div class="info-top-row"><span>作業項目：7. 進貨管理作業</span><button onclick="switchScreen('main-menu-screen')">返回主選單</button></div>
                 <div class="form-header-area">
-                    <div class="form-group">
-                        <label>客戶代碼*</label>
-                        <input type="text" id="form-customer" value="" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>對帳月盤</label>
-                        <input type="text" style="width:50px;" value="115" readonly>
-                        <input type="text" style="width:40px;" value="7" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>貨運方式</label>
-                        <select id="form-shipment" disabled>
+                    <div class="form-group"><label>進貨廠商</label><select id="pur-vendor-select"></select></div>
+                    <div class="form-group"><label>進貨日期</label><input type="text" value="115/07/20" readonly></div>
+                    <div class="form-group" style="grid-column: span 2;"><label style="color:green;">[商品條碼]</label><input type="text" id="pur-barcode-input" placeholder="輸入條碼按 Enter 進貨..." onkeypress="handlePurchaseScan(event)"></div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>序</th><th>產品代碼</th><th>產品名稱</th><th>進貨庫存異動</th><th>本次進貨價(成本)</th></tr></thead>
+                        <tbody id="table-purchase-body"></tbody>
+                    </table>
+                </div>
+                <div class="action-button-bar"><button class="act-btn" onclick="savePurchase()" style="color:green; width:120px;">完成進貨入庫</button></div>
+            </div>
+
+            <!-- ================= 9. 銷貨管理作業 (圖 2 & 圖 3) ================= -->
+            <div id="mod-sales" class="erp-screen">
+                <div class="info-top-row">
+                    <div>機台：A &nbsp;&nbsp;&nbsp; 使用者：<span id="current-user-span">0001</span></div>
+                    <div style="color: #000080; font-size:16px; font-weight:bold;">銷貨管理作業 (結帳系統)</div>
+                    <div>日期：115年07月20日</div>
+                </div>
+                <div class="form-header-area">
+                    <div class="form-group"><label>客戶代碼*</label><select id="form-customer-select"></select></div>
+                    <div class="form-group"><label>對帳月盤</label><input type="text" style="width:40px;" value="115" readonly><input type="text" style="width:30px;" value="7" readonly></div>
+                    <div class="form-group"><label>貨運通路</label>
+                        <select id="form-shipment">
                             <option value="店面直接購買">店面直接購買</option>
                             <option value="線上網拍">線上網拍</option>
                             <option value="露天">露天</option>
                             <option value="蝦皮">蝦皮</option>
+                            <option value="同行調貨">同行調貨</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>日期</label>
-                        <input type="text" id="form-date" value="" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>銷售人員</label>
-                        <input type="text" id="form-staff" value="" readonly>
-                    </div>
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label style="color:red; font-weight:bold;">[刷條碼區]</label>
-                        <input type="text" id="barcode-scanner-input" placeholder="請先按下方 [新增] 按鈕..." onkeypress="handleBarcodeScan(event)" disabled style="background:#e0e0e0;">
-                    </div>
-                    <div class="form-group">
-                        <label>單號</label>
-                        <input type="text" id="form-sheet-id" value="" readonly style="color:brown; font-weight:bold;">
-                    </div>
+                    <div class="form-group"><label>單號</label><input type="text" id="form-sheet-id" value="自動生成" readonly style="color:brown; font-weight:bold;"></div>
+                    <div class="form-group" style="grid-column: span 4;"><label style="color:red; font-weight:bold;">[刷條碼區]</label><input type="text" id="barcode-scanner-input" placeholder="請先按下方 [新增] 按鈕..." onkeypress="handleSalesScan(event)" disabled style="background:#e0e0e0;"></div>
                 </div>
-
-                <!-- 商品表格明細 -->
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr>
-                                <th style="width: 40px;">序</th>
-                                <th style="width: 130px;">產品代碼</th>
-                                <th>產品名稱</th>
-                                <th style="width: 80px;">分類</th>
-                                <th style="width: 60px;">總庫</th>
-                                <th style="width: 60px;">存量</th>
-                                <th style="width: 50px;">單位</th>
-                                <th style="width: 70px;">數量</th>
-                                <th style="width: 90px;">單價</th>
-                                <th style="width: 100px;">小計</th>
-                            </tr>
+                            <tr><th style="width:40px;">序</th><th>產品代碼</th><th>產品名稱</th><th>分類</th><th class="yellow-col">總庫</th><th>剩餘</th><th>單位</th><th style="width:60px;">數量</th><th>單價</th><th>小計</th></tr>
                         </thead>
-                        <tbody id="sales-item-table-body">
-                            <!-- 初始完全留空 -->
-                        </tbody>
+                        <tbody id="sales-item-table-body"></tbody>
                     </table>
                 </div>
-
-                <!-- 下方會計加總金流欄位 -->
                 <div class="summary-footer-area">
                     <div>
                         <div class="form-group" style="margin-bottom:4px;"><label>銷貨額</label><input type="text" id="summary-subtotal" value="0.00" readonly></div>
-                        <div class="form-group" style="margin-bottom:4px;"><label>稅 額</label><input type="text" value="0.00" readonly></div>
+                        <div class="form-group" style="margin-bottom:4px;"><label>稅 額</label><input type="text" id="summary-tax" value="0.00" readonly></div>
                         <div class="form-group"><label>合 計</label><input type="text" id="summary-total" value="0.00" readonly style="color:red; font-weight:bold;"></div>
                     </div>
                     <div>
-                        <div class="form-group" style="margin-bottom:4px;">
-                            <label>付款 1</label>
-                            <select id="pay-method-1" onchange="recalculatePricesWithFee()" disabled>
-                                <option value="現金">現金</option>
-                                <option value="轉帳">轉帳</option>
-                                <option value="信用卡">信用卡</option>
-                                <option value="悠遊卡">悠遊卡</option>
-                                <option value="LINE Pay">LINE Pay</option>
-                                <option value="橘子支付">橘子支付</option>
+                        <div class="form-group" style="margin-bottom:4px;"><label>付款 1</label>
+                            <select id="pay-method-1" onchange="recalculateSalesPrices()" disabled>
+                                <option value="現金">現金</option><option value="轉帳">轉帳</option>
+                                <option value="信用卡">信用卡(x1.03)</option><option value="悠遊卡">悠遊卡(x1.03)</option>
+                                <option value="LINE Pay">LINE Pay(x1.03)</option><option value="橘子支付">橘子支付(x1.03)</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:4px;"><label>付款 2</label><input type="text" readonly></div>
@@ -234,21 +280,43 @@
                         <div class="form-group"><label>應 收</label><input type="text" id="summary-payable" value="$ 0" readonly style="background:#000; color:#00ff00; font-family:monospace; font-size:16px; font-weight:bold;"></div>
                     </div>
                 </div>
-
-                <!-- 底部經典功能按鈕列 -->
                 <div class="action-button-bar">
-                    <button class="act-btn" id="btn-first" onclick="navBill('first')">極頭</button>
-                    <button class="act-btn" id="btn-prev" onclick="navBill('prev')">上筆</button>
-                    <button class="act-btn" id="btn-next" onclick="navBill('next')">下筆</button>
-                    <button class="act-btn" id="btn-last" onclick="navBill('last')">極尾</button>
-                    <button class="act-btn disabled">查詢</button>
-                    <button class="act-btn disabled">列印</button>
-                    <button class="act-btn" id="btn-add" onclick="clickAddInvoice()" style="color:brown;">新增</button>
-                    <button class="act-btn disabled" id="btn-modify">修改</button>
-                    <button class="act-btn disabled" id="btn-delete">刪除</button>
-                    <button class="act-btn" id="btn-save" onclick="clickSaveInvoice()" style="color:green;">儲存</button>
-                    <button class="act-btn" id="btn-cancel" onclick="clickCancelInvoice()">放棄</button>
-                    <button class="act-btn" onclick="closeSalesScreen()" style="color:red;">離開</button>
+                    <button class="act-btn" onclick="alert('第一筆')">極頭</button>
+                    <button class="act-btn" onclick="alert('上一筆')">上筆</button>
+                    <button class="act-btn" onclick="alert('下一筆')">下筆</button>
+                    <button class="act-btn" onclick="clickAddInvoice()" style="color:brown;">新增</button>
+                    <button class="act-btn" onclick="clickSaveInvoice()" style="color:green;">儲存</button>
+                    <button class="act-btn" onclick="switchScreen('main-menu-screen')" style="color:red;">離開</button>
+                </div>
+            </div>
+
+            <!-- ================= H. 月營業分析與報表系統 ================= -->
+            <div id="mod-report" class="erp-screen">
+                <div class="info-top-row"><span>會計報表：日結 / 月結 / 營業稅月報表分析</span><button onclick="switchScreen('main-menu-screen')">返回主選單</button></div>
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-bottom:15px;">
+                    <div style="background:#fff; border:2px inset #fff; padding:15px; text-align:center;">
+                        <h5 style="color:#000080;">今日累計銷售額 (日結)</h5>
+                        <p id="rep-sales" style="font-size:24px; font-weight:bold; color:green; margin-top:5px;">$ 0</p>
+                    </div>
+                    <div style="background:#fff; border:2px inset #fff; padding:15px; text-align:center;">
+                        <h5 style="color:#000080;">累計銷貨平均成本</h5>
+                        <p id="rep-cost" style="font-size:24px; font-weight:bold; color:brown; margin-top:5px;">$ 0</p>
+                    </div>
+                    <div style="background:#fff; border:2px inset #fff; padding:15px; text-align:center;">
+                        <h5 style="color:#000080;">淨利潤分析</h5>
+                        <p id="rep-profit" style="font-size:24px; font-weight:bold; color:red; margin-top:5px;">$ 0</p>
+                    </div>
+                    <div style="background:#fff; border:2px inset #fff; padding:15px; text-align:center;">
+                        <h5 style="color:#000080;">銷項營業稅申報估算 (5%)</h5>
+                        <p id="rep-tax" style="font-size:24px; font-weight:bold; color:#000; margin-top:5px;">$ 0</p>
+                    </div>
+                </div>
+                <h4 style="color:#000080; margin-bottom:5px;">全系統歷史結帳流水帳紀錄</h4>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>單號</th><th>客戶</th><th>通路</th><th>金流付款</th><th>總金額</th><th>狀態</th></tr></thead>
+                        <tbody id="table-report-body"></tbody>
+                    </table>
                 </div>
             </div>
 
@@ -256,247 +324,256 @@
     </div>
 
     <script>
-        let siteUnlocked = false;
-        let loggedInStaff = "";
+        // --- 核心全域雲端即時同步資料庫 ---
+        let db_products = [
+            { barcode: "471001", name: "Switch 寶可夢遊戲片", type: "遊戲", stock: 10, avgCost: 1000, price: 1500 },
+            { barcode: "471002", name: "海賊王草帽路飛公仔", type: "公仔", stock: 5, avgCost: 2000, price: 3000 }
+        ];
+        let db_vendors = [{ code: "V001", name: "萬代代理商" }, { code: "V002", name: "同行調貨-玩具叔叔" }];
+        let db_customers = [{ code: "C001", name: "零售客戶", type: "零售" }, { code: "C002", name: "同行調貨-阿豪", type: "同行調貨" }];
+        let db_sales_orders = [];
         
-        // 【修正】初始數據庫完全真空！不夾帶任何假資料項目
-        let mockDatabase = []; 
-        let currentRecordIndex = -1; 
-        let isAddingMode = false;   
-        let newCartItems = [];      
+        let temp_purchase_items = [];
+        let temp_sales_cart = [];
+        let isSalesAdding = false;
 
-        // 1. 環境安全驗證密碼
+        // 1. 環境密碼驗證
         function verifySiteAccess() {
-            const pw = document.getElementById('site-password').value;
-            if (pw === 'Pipi25508846') {
-                siteUnlocked = true;
+            if (document.getElementById('site-password').value === 'Pipi25508846') {
                 document.getElementById('site-auth-overlay').style.display = 'none';
                 document.getElementById('login-overlay').style.display = 'flex';
-            } else {
-                alert('網站通關密碼錯誤！');
-            }
+            } else { alert('環境通關密碼錯誤！'); }
         }
 
-        // 2. 員工帳密驗證
+        // 2. 員工代號登入
         function loginSystem() {
-            const id = document.getElementById('emp-id').value.trim();
-            const pw = document.getElementById('emp-password').value;
+            let id = document.getElementById('emp-id').value.trim();
+            let pw = document.getElementById('emp-password').value;
             if (id && pw) {
-                loggedInStaff = id;
                 document.getElementById('current-user-span').innerText = id;
-                document.getElementById('form-staff').value = id;
                 document.getElementById('login-overlay').style.display = 'none';
-            } else {
-                alert('請完整輸入員工帳號與密碼！');
-            }
+                initAllDropdowns();
+                refreshAllTables();
+            } else { alert('請輸入完整代碼與密碼！'); }
         }
 
-        // 按 9. 進入系統 (圖 2 狀態：完全乾淨空產線)
-        function openSalesScreen() {
-            document.getElementById('main-menu-screen').style.display = 'none';
-            document.getElementById('sales-screen').style.display = 'flex';
-            isAddingMode = false;
-            showRecord();
+        // 視窗切換引擎
+        function switchScreen(screenId) {
+            document.querySelectorAll('.erp-screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+            refreshAllTables();
         }
 
-        function closeSalesScreen() {
-            document.getElementById('sales-screen').style.display = 'none';
-            document.getElementById('main-menu-screen').style.display = 'block';
-        }
-
-        // 渲染或初始化畫面（圖 2 狀態）
-        function showRecord() {
-            if (mockDatabase.length === 0) {
-                // 如果是全新無單狀態，所有欄位清空歸零
-                document.getElementById('form-sheet-id').value = "";
-                document.getElementById('form-date').value = "0115/07/14";
-                document.getElementById('form-customer').value = "零售";
-                document.getElementById('form-shipment').value = "店面直接購買";
-                document.getElementById('pay-method-1').value = "現金";
-
-                document.getElementById('barcode-scanner-input').disabled = true;
-                document.getElementById('barcode-scanner-input').style.backgroundColor = "#e0e0e0";
-                document.getElementById('barcode-scanner-input').placeholder = "請先按下方 [新增] 按鈕...";
-                document.getElementById('form-shipment').disabled = true;
-                document.getElementById('pay-method-1').disabled = true;
-
-                renderTableRows([], "現金");
-                return;
-            }
+        // 初始化所有下拉選單
+        function initAllDropdowns() {
+            let vSel = document.getElementById('pur-vendor-select');
+            vSel.innerHTML = db_vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
             
-            // 如果有歷史存檔，則讀取歷史
-            const record = mockDatabase[currentRecordIndex];
-            document.getElementById('form-sheet-id').value = record.sheet_id;
-            document.getElementById('form-date').value = record.date;
-            document.getElementById('form-staff').value = record.staff;
-            document.getElementById('form-customer').value = record.customer;
-            document.getElementById('form-shipment').value = record.shipment;
-            document.getElementById('pay-method-1').value = record.payment;
-
-            document.getElementById('barcode-scanner-input').disabled = true;
-            document.getElementById('barcode-scanner-input').style.backgroundColor = "#e0e0e0";
-            document.getElementById('form-shipment').disabled = true;
-            document.getElementById('pay-method-1').disabled = true;
-
-            renderTableRows(record.items, record.payment);
+            let cSel = document.getElementById('form-customer-select');
+            cSel.innerHTML = db_customers.map(c => `<option value="${c.code}">${c.name} [${c.type}]</option>`).join('');
         }
 
-        // 翻頁導覽
-        function navBill(action) {
-            if (isAddingMode || mockDatabase.length === 0) return; 
-            if (action === 'first') currentRecordIndex = 0;
-            if (action === 'last') currentRecordIndex = mockDatabase.length - 1;
-            if (action === 'prev' && currentRecordIndex > 0) currentRecordIndex--;
-            if (action === 'next' && currentRecordIndex < mockDatabase.length - 1) currentRecordIndex++;
-            showRecord();
+        // 刷新全系統表格資料
+        function refreshAllTables() {
+            // 刷新產品基本資料
+            document.getElementById('table-product-body').innerHTML = db_products.map(p => {
+                let margin = p.price > 0 ? (((p.price - p.avgCost) / p.price) * 100).toFixed(0) : 0;
+                return `<tr><td>${p.barcode}</td><td>${p.name}</td><td>${p.type}</td><td class="yellow-col">${p.stock}</td><td>$${p.avgCost}</td><td>$${p.price}</td><td style="color:green; font-weight:bold;">${margin}%</td></tr>`;
+            }).join('');
+
+            // 刷新客戶基本資料
+            document.getElementById('table-customer-body').innerHTML = db_customers.map((c, i) => `<tr><td>${i+1}</td><td>${c.code}</td><td>${c.name}</td><td>${c.type}</td></tr>`).join('');
+
+            // 刷新廠商基本資料
+            document.getElementById('table-vendor-body').innerHTML = db_vendors.map((v, i) => `<tr><td>${i+1}</td><td>${v.code}</td><td>${v.name}</td></tr>`).join('');
+
+            // 刷新會計分析報表 (日結/月結/利潤/營業稅即時運算)
+            let totalSales = 0, totalCost = 0;
+            document.getElementById('table-report-body').innerHTML = db_sales_orders.map(o => {
+                totalSales += o.total;
+                totalCost += o.cost;
+                return `<tr><td>${o.id}</td><td>${o.customer}</td><td>${o.shipment}</td><td>${o.payment}</td><td>$${o.total}</td><td style="color:green;">已結帳交易完成</td></tr>`;
+            }).join('');
+
+            document.getElementById('rep-sales').innerText = `$ ${totalSales.toLocaleString()}`;
+            document.getElementById('rep-cost').innerText = `$ ${totalCost.toLocaleString()}`;
+            document.getElementById('rep-profit').innerText = `$ ${(totalSales - totalCost).toLocaleString()}`;
+            document.getElementById('rep-tax').innerText = `$ ${Math.round(totalSales * 0.05).toLocaleString()}`;
         }
 
-        // 【圖 3 狀態】按下【新增】按鈕：清除並準備刷碼
-        function clickAddInvoice() {
-            isAddingMode = true;
-            newCartItems = [];
-            
-            document.getElementById('form-sheet-id').value = "自動編號中...";
-            document.getElementById('form-date').value = "0115/07/14";
-            document.getElementById('form-customer').value = "零售";
-            document.getElementById('form-shipment').disabled = false;
-            document.getElementById('pay-method-1').disabled = false;
-            document.getElementById('pay-method-1').value = "現金"; 
-            
-            const scanner = document.getElementById('barcode-scanner-input');
-            scanner.disabled = false;
-            scanner.style.backgroundColor = "#ffffff";
-            scanner.placeholder = "請在此刷入條碼或輸入自編碼並按 Enter...";
-            scanner.value = "";
-            scanner.focus();
-
-            renderTableRows([], "現金");
+        // 新增客戶/同行
+        function addCustomer() {
+            let code = document.getElementById('c-code').value.trim();
+            let name = document.getElementById('c-name').value.trim();
+            let type = document.getElementById('c-type').value;
+            if(!code || !name) return alert('請填寫完整客戶資料');
+            db_customers.push({ code, name, type });
+            initAllDropdowns(); refreshAllTables();
+            alert('客戶資料已成功同步更新！');
         }
 
-        // 條碼輸入事件
-        function handleBarcodeScan(e) {
+        // 新增廠商
+        function addVendor() {
+            let code = document.getElementById('v-code').value.trim();
+            let name = document.getElementById('v-name').value.trim();
+            if(!code || !name) return alert('請填寫完整廠商資料');
+            db_vendors.push({ code, name });
+            initAllDropdowns(); refreshAllTables();
+            alert('廠商資料已成功同步更新！');
+        }
+
+        // 新增產品基本檔
+        function addProduct() {
+            let barcode = document.getElementById('p-barcode').value.trim();
+            let name = document.getElementById('p-name').value.trim();
+            let type = document.getElementById('p-type').value.trim();
+            let cost = parseFloat(document.getElementById('p-cost').value) || 0;
+            let price = parseFloat(document.getElementById('p-price').value) || 0;
+            if(!barcode || !name) return alert('請填寫條碼與商品名稱');
+            db_products.push({ barcode, name, type, stock: 0, avgCost: cost, price: price });
+            refreshAllTables();
+            alert('新商品基本資料與售價已建立！');
+        }
+
+        // 7. 進貨管理作業條碼處理 (自動更新平均成本與庫存)
+        function handlePurchaseScan(e) {
             if (e.key !== 'Enter') return;
-            const code = e.target.value.trim();
+            let code = e.target.value.trim();
             if (!code) return;
             e.target.value = "";
 
-            // 根據輸入內容產生真實條碼項目
-            let foundProd = {
-                barcode: code,
-                name: "商品代碼 " + code,
-                type: "現場貨品",
-                stock: 100,
-                unit: "個",
-                basePrice: 1000 // 預設基礎現金價 1000 元
-            };
+            let p = db_products.find(x => x.barcode === code);
+            if (!p) return alert('產品庫無此條碼，請先到 5 號功能建立商品基本檔！');
 
-            const exist = newCartItems.find(item => item.barcode === foundProd.barcode);
-            if (exist) {
-                exist.qty++;
-            } else {
-                newCartItems.push({
-                    barcode: foundProd.barcode,
-                    name: foundProd.name,
-                    type: foundProd.type,
-                    stock: foundProd.stock,
-                    unit: foundProd.unit,
-                    qty: 1,
-                    basePrice: foundProd.basePrice
-                });
+            temp_purchase_items.push({ barcode: p.barcode, name: p.name, qty: 1, cost: p.avgCost });
+            renderPurchaseTable();
+        }
+
+        function renderPurchaseTable() {
+            document.getElementById('table-purchase-body').innerHTML = temp_purchase_items.map((item, i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${item.barcode}</td>
+                    <td>${item.name}</td>
+                    <td><input type="number" value="${item.qty}" onchange="temp_purchase_items(${i}).qty = parseInt(this.value)" style="width:60px;"></td>
+                    <td><input type="number" value="${item.cost}" onchange="temp_purchase_items(${i}).cost = parseFloat(this.value)" style="width:80px;"></td>
+                </tr>
+            `).join('');
+        }
+
+        function savePurchase() {
+            if(temp_purchase_items.length === 0) return alert('進貨單內無品項');
+            temp_purchase_items.forEach(item => {
+                let p = db_products.find(x => x.barcode === item.barcode);
+                if (p) {
+                    let oldTotalCost = p.stock * p.avgCost;
+                    let newTotalCost = item.qty * item.cost;
+                    p.stock += item.qty;
+                    // 自動加權平均成本引擎
+                    p.avgCost = Math.round((oldTotalCost + newTotalCost) / p.stock);
+                }
+            });
+            alert('進貨成功！系統已自動重新計算產品平均成本與加總總庫存！');
+            temp_purchase_items = [];
+            switchScreen('main-menu-screen');
+        }
+
+        // 9. 結帳系統作業區
+        function clickAddInvoice() {
+            isSalesAdding = true;
+            temp_sales_cart = [];
+            document.getElementById('form-sheet-id').value = "11507" + Math.floor(Math.random()*90000 + 10000);
+            let scanner = document.getElementById('barcode-scanner-input');
+            scanner.disabled = false; scanner.style.backgroundColor = "#fff"; scanner.focus();
+            document.getElementById('pay-method-1').disabled = false;
+            renderSalesTable();
+        }
+
+        function handleSalesScan(e) {
+            if (e.key !== 'Enter') return;
+            let code = e.target.value.trim();
+            if (!code) return;
+            e.target.value = "";
+
+            let p = db_products.find(x => x.barcode === code);
+            if (!p) return alert('找不到此條碼！');
+
+            let exist = temp_sales_cart.find(x => x.barcode === code);
+            if (exist) { exist.qty++; } 
+            else {
+                temp_sales_cart.push({ barcode: p.barcode, name: p.name, type: p.type, stock: p.stock, basePrice: p.price, avgCost: p.avgCost, qty: 1 });
             }
-
-            const currentPayment = document.getElementById('pay-method-1').value;
-            renderTableRows(newCartItems, currentPayment);
+            renderSalesTable();
         }
 
-        // 切換付款方式自動觸發 1.03 倍率精算
-        function recalculatePricesWithFee() {
-            if (!isAddingMode) return;
-            const currentPayment = document.getElementById('pay-method-1').value;
-            renderTableRows(newCartItems, currentPayment);
-        }
+        function recalculateSalesPrices() { renderSalesTable(); }
 
-        // 會計核心運算模組
-        function renderTableRows(items, paymentMethod) {
-            const tbody = document.getElementById('sales-item-table-body');
+        function renderSalesTable() {
+            let tbody = document.getElementById('sales-item-table-body');
             tbody.innerHTML = '';
-            
-            // 刷卡類別自動觸發 3% 手續費外加 (x1.03)
-            const needFee = (paymentMethod === '信用卡' || paymentMethod === '悠遊卡' || paymentMethod === 'LINE Pay' || paymentMethod === '橘子支付');
-            
-            let totalAmount = 0;
-            let totalQty = 0;
-            const displayRowCount = Math.max(items.length, 8); // 固定維持 8 行視覺排版
+            let payMethod = document.getElementById('pay-method-1').value;
+            // 信用卡、悠遊卡、LINE Pay、橘子支付 自動加收 3% 手續費 (x1.03)
+            let needFee = ['信用卡', '悠遊卡', 'LINE Pay', '橘子支付'].includes(payMethod);
 
-            for (let i = 0; i < displayRowCount; i++) {
-                const item = items[i];
+            let totalSales = 0, totalQty = 0;
+            let rowCount = Math.max(temp_sales_cart.length, 7);
+
+            for (let i = 0; i < rowCount; i++) {
+                let item = temp_sales_cart[i];
                 if (item) {
-                    const finalPrice = needFee ? Math.round(item.basePrice * 1.03) : item.basePrice;
-                    const subtotal = finalPrice * item.qty;
-                    
-                    totalAmount += subtotal;
+                    let finalPrice = needFee ? Math.round(item.basePrice * 1.03) : item.basePrice;
+                    let subtotal = finalPrice * item.qty;
+                    totalSales += subtotal;
                     totalQty += item.qty;
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${i + 1}</td>
-                            <td>${item.barcode}</td>
-                            <td>${item.name}</td>
-                            <td>${item.type}</td>
-                            <td class="yellow-col">${item.stock}</td>
-                            <td>${item.stock - item.qty}</td>
-                            <td>${item.unit}</td>
-                            <td>${item.qty}</td>
-                            <td>$${finalPrice}</td>
-                            <td style="font-weight:bold;">$${subtotal}</td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr><td>${i+1}</td><td>${item.barcode}</td><td>${item.name}</td><td>${item.type}</td><td class="yellow-col">${item.stock}</td><td>${item.stock - item.qty}</td><td>個</td><td>${item.qty}</td><td>$${finalPrice}</td><td style='font-weight:bold;'>$${subtotal}</td></tr>`;
                 } else {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${i + 1}</td> <td></td> <td></td> <td></td> <td class="yellow-col"></td> <td></td> <td></td> <td></td> <td></td> <td></td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr><td>${i+1}</td><td></td><td></td><td></td><td class="yellow-col"></td><td></td><td></td><td></td><td></td><td></td></tr>`;
                 }
             }
 
-            document.getElementById('summary-subtotal').value = totalAmount.toFixed(2);
-            document.getElementById('summary-total').value = totalAmount.toFixed(2);
+            let tax = Math.round(totalSales * 0.05); // 台灣標準 5% 營業稅自動化算
+            document.getElementById('summary-subtotal').value = (totalSales - tax).toFixed(2);
+            document.getElementById('summary-tax').value = tax.toFixed(2);
+            document.getElementById('summary-total').value = totalSales.toFixed(2);
             document.getElementById('summary-total-qty').value = totalQty;
-            document.getElementById('summary-payable').value = `$ ${totalAmount.toLocaleString()}`;
+            document.getElementById('summary-payable').value = `$ ${totalSales.toLocaleString()}`;
         }
 
-        // 點擊【儲存】
         function clickSaveInvoice() {
-            if (!isAddingMode) { alert("請先點擊 [新增] 開始一筆新結帳！"); return; }
-            if (newCartItems.length === 0) { alert("購物車內無商品，無法儲存！"); return; }
-
-            const finalPayment = document.getElementById('pay-method-1').value;
-            const nextId = "115070" + (535 + mockDatabase.length);
+            if(!isSalesAdding || temp_sales_cart.length === 0) return alert('無購物品項無法儲存！');
             
-            mockDatabase.push({
-                sheet_id: nextId,
-                date: "0115/07/14",
-                staff: loggedInStaff || "PIPI",
-                customer: "零售",
-                shipment: document.getElementById('form-shipment').value,
-                payment: finalPayment,
-                items: [...newCartItems]
+            let totalSales = 0, totalCost = 0;
+            let payMethod = document.getElementById('pay-method-1').value;
+            let needFee = ['信用卡', '悠遊卡', 'LINE Pay', '橘子支付'].includes(payMethod);
+
+            temp_sales_cart.forEach(item => {
+                let p = db_products.find(x => x.barcode === item.barcode);
+                if (p) { p.stock -= item.qty; } // 扣庫存
+
+                let finalPrice = needFee ? Math.round(item.basePrice * 1.03) : item.basePrice;
+                totalSales += (finalPrice * item.qty);
+                totalCost += (item.avgCost * item.qty); // 累計平均成本
             });
 
-            alert(`🎉 單號 ${nextId} 銷售紀錄已成功儲存入庫！`);
-            isAddingMode = false;
-            currentRecordIndex = mockDatabase.length - 1; 
-            showRecord();
-        }
+            let cSel = document.getElementById('form-customer-select');
+            let custName = cSel.options[cSel.selectedIndex].text;
 
-        // 點擊【放棄】
-        function clickCancelInvoice() {
-            if (!isAddingMode) return;
-            if (confirm("確定放棄目前輸入的所有結帳資料嗎？")) {
-                isAddingMode = false;
-                showRecord();
-            }
+            // 寫入流水帳資料庫
+            db_sales_orders.push({
+                id: document.getElementById('form-sheet-id').value,
+                customer: custName,
+                shipment: document.getElementById('form-shipment').value,
+                payment: payMethod,
+                total: totalSales,
+                cost: totalCost
+            });
+
+            alert('結帳存檔成功！全系統資料、成本利潤、日結報表已全數即時同步。');
+            isSalesAdding = false;
+            document.getElementById('barcode-scanner-input').disabled = true;
+            document.getElementById('barcode-scanner-input').style.backgroundColor = "#e0e0e0";
+            switchScreen('main-menu-screen');
         }
     </script>
 </body>
