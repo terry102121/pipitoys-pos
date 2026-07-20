@@ -3,699 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PIPI TOYS 雲端進銷存系統 - 終極進化版</title>
+    <title>威志將庫存管理系統 - PIPI TOYS 專用版</title>
     <style>
-        :root {
-            --primary-color: #4f46e5;
-            --bg-color: #f3f4f6;
-            --panel-bg: #ffffff;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { display: flex; height: 100vh; background-color: var(--bg-color); color: var(--text-color); }
+        /* 復刻相片中的經典 Windows 系統配色與樣式 */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "MS Sans Serif", "微軟正黑體", sans-serif; font-size: 14px; }
+        body { background-color: #55aaaa; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        /* 密碼驗證與登入層 */
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:9999; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .login-box h2 { margin-bottom: 20px; color: var(--primary-color); }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px; }
-        .login-box button { width:100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        /* 雲端安全驗證層 */
+        .auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:9999; }
+        .auth-box { background: #d4d0c8; border: 2px outset #fff; padding: 25px; width: 360px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); text-align: center; }
+        .auth-box h3 { margin-bottom: 15px; color: #000080; }
+        .auth-box input { width: 100%; padding: 8px; margin: 10px 0; border: 2px inset #fff; background: white; }
+        .auth-box button { padding: 8px 20px; background: #d4d0c8; border: 2px outset #fff; font-weight: bold; cursor: pointer; }
 
-        /* 左側功能導覽列 */
-        nav { width: 240px; background: #1e1b4b; color: white; display: flex; flex-direction: column; padding: 20px 0; }
-        nav .brand { text-align: center; font-size: 20px; font-weight: bold; padding-bottom: 20px; border-bottom: 1px solid #312e81; margin-bottom: 20px; color: #e0e7ff; }
-        nav button { background: none; border: none; color: #cbd5e1; padding: 14px 20px; text-align: left; font-size: 16px; cursor: pointer; width: 100%; transition: 0.3s; }
-        nav button:hover, nav button.active { background: var(--primary-color); color: white; font-weight: bold; }
+        /* 主視窗外殼 */
+        .window-container { background-color: #d4d0c8; border: 3px outset #fff; width: 1024px; height: 740px; display: flex; flex-direction: column; position: relative; box-shadow: 3px 3px 15px rgba(0,0,0,0.3); }
+        .window-title-bar { background: linear-gradient(90deg, #000080, #1084d0); color: white; padding: 5px 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .window-body { flex: 1; padding: 10px; position: relative; background-color: #d4d0c8; }
 
-        /* 右側主要內容區 */
-        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        header { background: var(--panel-bg); padding: 15px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .content-area { flex: 1; padding: 30px; overflow-y: auto; display: none; }
-        .content-area.active { display: block; }
+        /* 頂部選單文字列 */
+        .menu-text-bar { background: #d4d0c8; padding: 3px 10px; border-bottom: 1px solid #808080; color: black; display: flex; gap: 15px; font-size: 13px; }
 
-        /* 卡片與表單樣式 */
-        .card { background: var(--panel-bg); padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { margin-bottom: 20px; font-size: 22px; color: #111827; border-left: 5px solid var(--primary-color); padding-left: 10px; }
-        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .form-group { flex: 1; min-width: 180px; display: flex; flex-direction: column; }
-        .form-group label { margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #4b5563; }
-        input, select, textarea { padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 15px; }
+        /* --- 畫面 1：主畫面選單外觀 --- */
+        #main-menu-screen { display: block; width: 100%; height: 100%; }
+        .erp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; background: #d4d0c8; padding: 15px; border: 2px inset #fff; }
+        .erp-btn { background: #e0deda; border: 2px outset #fff; color: #0000ff; text-align: left; padding: 8px 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; }
+        .erp-btn:active { border: 2px inset #fff; }
+        .brand-center-box { text-align: center; margin-top: 60px; border: 2px inset #fff; padding: 40px; background: #e6e6e6; }
+        .brand-title { font-size: 48px; color: #008000; font-family: "Times New Roman", serif; font-weight: bold; letter-spacing: 5px; }
+        .btn-exit-main { background: #e0deda; border: 2px outset #fff; color: #ff0000; font-size: 20px; font-weight: bold; padding: 10px 30px; margin-top: 20px; cursor: pointer; }
+
+        /* --- 畫面 2 & 3：銷貨管理作業外觀 --- */
+        #sales-screen { display: none; width: 100%; height: 100%; flex-direction: column; }
+        .info-top-row { display: flex; justify-content: space-between; padding: 3px 5px; background: #d4d0c8; font-weight: bold; border-bottom: 1px solid #808080; }
+        .form-header-area { border: 2px inset #fff; padding: 10px; margin-bottom: 5px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #cbd2d6; }
+        .form-group { display: flex; align-items: center; gap: 5px; }
+        .form-group label { font-weight: bold; color: #000080; white-space: nowrap; }
+        .form-group input, .form-group select { padding: 3px; border: 2px inset #fff; background: white; width: 100%; }
         
-        /* 滾動表格樣式 */
-        .table-container { max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; background: white; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
-        th { background: #f9fafb; position: sticky; top: 0; z-index: 10; color: #374151; }
-        
-        /* 按鈕視覺 */
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; }
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-danger { background: #ef4444; color: white; padding: 6px 12px; font-size: 13px; }
-        
-        .sub-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
-        .sub-tab { background: #e5e7eb; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-weight: 600; }
-        .sub-tab.active { background: var(--primary-color); color: white; }
-        .sub-content { display: none; }
-        .sub-content.active { display: block; }
+        /* 產品資料表格 */
+        .table-container { flex: 1; overflow-y: auto; background: white; border: 2px inset #fff; min-height: 240px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #d4d0c8; border: 1px solid #808080; padding: 6px; font-weight: bold; position: sticky; top: 0; color: black; }
+        td { border: 1px solid #e0e0e0; padding: 5px; background: white; }
+        .yellow-col { background-color: #ffffaa; text-align: center; font-weight: bold; }
+
+        /* 下方加總與付款區 */
+        .summary-footer-area { border: 2px inset #fff; padding: 10px; margin-top: 5px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #cbd2d6; }
+
+        /* 底部功能按鈕列 */
+        .action-button-bar { display: flex; gap: 2px; margin-top: 8px; background: #d4d0c8; border: 2px inset #fff; padding: 4px; }
+        .act-btn { background: #cbd2d6; border: 2px outset #fff; color: #0000ff; padding: 6px 12px; font-weight: bold; cursor: pointer; min-width: 65px; text-align: center; }
+        .act-btn:active { border: 2px inset #fff; }
+        .act-btn.disabled { color: #808080; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <div id="site-auth-overlay" class="overlay">
-        <div class="login-box">
-            <h2>PIPI TOYS 雲端安全驗證</h2>
-            <p style="color: #6b7280; margin-bottom: 15px;">請輸入網站系統通關密碼</p>
+    <!-- 1. 系統環境密碼安全驗證 -->
+    <div id="site-auth-overlay" class="auth-overlay">
+        <div class="auth-box">
+            <h3>威志將網路安全驗證</h3>
+            <p style="font-size: 12px; color: #404040;">請輸入網頁系統環境通關密碼</p>
             <input type="password" id="site-password" placeholder="請輸入密碼">
-            <button onclick="verifySiteAccess()">點擊通關</button>
+            <button onclick="verifySiteAccess()">確認通關</button>
         </div>
     </div>
 
-    <div id="login-overlay" class="overlay" style="display: none;">
-        <div class="login-box">
-            <h2>員工登入系統</h2>
-            <input type="text" id="emp-id" placeholder="請輸入員工代號 (預設: 0000)">
-            <input type="password" id="emp-password" placeholder="請輸入密碼 (預設: 000000)">
-            <button onclick="login()">登入 POS</button>
+    <!-- 2. 員工代號帳密登入層 -->
+    <div id="login-overlay" class="auth-overlay" style="display: none;">
+        <div class="auth-box">
+            <h3>PIPI TOYS 員工系統登入</h3>
+            <input type="text" id="emp-id" placeholder="員工代碼 (4位碼，例如 0001)">
+            <input type="password" id="emp-password" placeholder="登入密碼 (6位碼，例如 000000)">
+            <button onclick="loginSystem()">登入系統</button>
         </div>
     </div>
 
-    <nav>
-        <div class="brand">PIPI TOYS 雲端版</div>
-        <button onclick="switchTab('tab-checkout')" id="nav-checkout" class="active">🛒 收銀結帳</button>
-        <button onclick="switchTab('tab-receive')" id="nav-receive">📦 商品進貨</button>
-        <button onclick="switchTab('tab-create')" id="nav-create">➕ 建立商品</button>
-        <button onclick="switchTab('tab-peer')" id="nav-peer">🤝 同行管理</button>
-        <button onclick="switchTab('tab-report')" id="nav-report">📊 營業報表</button>
-        <button onclick="switchTab('tab-emp')" id="nav-emp">👤 新增員工</button>
-    </nav>
+    <!-- 3. ERP 系統主外殼 -->
+    <div class="window-container">
+        <div class="window-title-bar">
+            <span>威志將庫存管理系統 - [0422317599]</span>
+            <span style="font-size: 12px;">X</span>
+        </div>
+        
+        <div class="menu-text-bar">
+            <span>1.基本資料</span> <span>2.產品庫存</span> <span>3.進貨管理</span> <span>4.銷貨管理</span> <span>5.帳款管理</span> <span>6.銷售分析</span> <span>7.結構管理</span> <span>8.系統維護</span>
+        </div>
 
-    <main>
-        <header>
-            <div style="font-weight: bold; font-size: 18px;">系統操作面板</div>
-            <div id="user-info" style="color: #4b5563;">操作人員：未登入</div>
-        </header>
+        <div class="window-body">
+            
+            <!-- ================= 畫面 1：主功能畫面選單 ================= -->
+            <div id="main-menu-screen">
+                <div class="erp-grid">
+                    <button class="erp-btn">1.公司資料設定</button>
+                    <button class="erp-btn">7.進貨管理作業</button>
+                    <!-- 按下 9. 銷貨管理作業 進入結帳畫面 -->
+                    <button class="erp-btn" style="color: #ff0000; background: #ffffcc;" onclick="openSalesScreen()">9.銷貨管理作業</button>
+                    <button class="erp-btn">D.客戶 對帳單</button>
+                    <button class="erp-btn">J.廠商 對帳單</button>
+                    
+                    <button class="erp-btn">2.客戶基本資料</button>
+                    <button class="erp-btn">8.進貨退回作業</button>
+                    <button class="erp-btn">A.銷貨退回作業</button>
+                    <button class="erp-btn">E.目前未收查印</button>
+                    <button class="erp-btn">K.目前未付查印</button>
+                    
+                    <button class="erp-btn">3.廠商基本資料</button>
+                    <div style="grid-column: span 2;"></div>
+                    <button class="erp-btn">F.應收帳款銷帳</button>
+                    <button class="erp-btn">L.應付帳款銷帳</button>
+                    
+                    <button class="erp-btn">4.員工基本資料</button>
+                    <div style="grid-column: span 2;"></div>
+                    <button class="erp-btn">G.收款狀況查印</button>
+                    <button class="erp-btn">M.付款狀況查印</button>
+                    
+                    <button class="erp-btn">5.產品基本資料</button>
+                    <div style="grid-column: span 2;"></div>
+                    <button class="erp-btn">H.月營業分析</button>
+                    <button class="erp-btn">N.進退記錄查印</button>
+                    
+                    <button class="erp-btn">6.條碼資料編修</button>
+                    <div style="grid-column: span 2;"></div>
+                    <button class="erp-btn">I.銷貨帳 查印</button>
+                    <button class="erp-btn">O.進貨帳 查印</button>
+                </div>
 
-        <div id="tab-checkout" class="content-area active">
-            <div class="card">
-                <h2>收銀結帳系統 (滾動無限排)</h2>
-                <div class="form-row">
-                    <div class="form-group" style="flex: 2;">
-                        <label>掃描條碼或自編碼</label>
-                        <input type="text" id="checkout-scan" placeholder="請刷條碼並按 Enter..." onkeypress="handleCheckoutScan(event)">
+                <div class="brand-center-box">
+                    <div class="brand-title">PIPI TOYS</div>
+                    <button class="btn-exit-main" onclick="alert('安全登出！')">離 開</button>
+                </div>
+            </div>
+
+            <!-- ================= 畫面 2 & 3：銷貨管理作業系統 ================= -->
+            <div id="sales-screen">
+                <!-- 狀態資訊列 -->
+                <div class="info-top-row">
+                    <div>機台：A &nbsp;&nbsp;&nbsp; 使用者：<span id="current-user-span">PIPI</span></div>
+                    <div style="color: #000080; font-size:16px;">銷貨管理作業</div>
+                    <div>日期：115年07月14日</div>
+                </div>
+
+                <!-- 單據欄位區 -->
+                <div class="form-header-area">
+                    <div class="form-group">
+                        <label>客戶代碼*</label>
+                        <input type="text" id="form-customer" value="零售" readonly>
                     </div>
                     <div class="form-group">
-                        <label>付款方式</label>
-                        <select id="checkout-payment" onchange="renderCheckoutCart()">
-                            <option value="現金">現金</option>
-                            <option value="轉帳">轉帳</option>
-                            <option value="信用卡">信用卡 (+$3%)</option>
-                            <option value="LINE Pay">LINE Pay (+$3%)</option>
-                            <option value="橘子支付">橘子支付 (+$3%)</option>
+                        <label>對帳月盤</label>
+                        <input type="text" style="width:50px;" value="115" readonly>
+                        <input type="text" style="width:40px;" value="7" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>貨運方式</label>
+                        <select id="form-shipment" disabled>
+                            <option value="店面直接購買">店面直接購買</option>
+                            <option value="線上網拍">線上網拍</option>
+                            <option value="露天">露天</option>
+                            <option value="蝦皮">蝦皮</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="text" id="form-date" value="0115/07/14" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>銷售人員</label>
+                        <input type="text" id="form-staff" value="PIPI" readonly>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label style="color:red; font-weight:bold;">[刷條碼區]</label>
+                        <input type="text" id="barcode-scanner-input" placeholder="按[新增]後在此刷條碼或輸入自編碼..." onkeypress="handleBarcodeScan(event)" disabled style="background:#e0e0e0;">
+                    </div>
+                    <div class="form-group">
+                        <label>單號</label>
+                        <input type="text" id="form-sheet-id" value="115070535" readonly style="color:brown; font-weight:bold;">
                     </div>
                 </div>
 
+                <!-- 商品表格明細 (滾動無限排) -->
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>商品名稱</th>
-                                <th>條碼</th>
-                                <th>單價</th>
-                                <th style="width: 100px;">數量</th>
-                                <th>小計</th>
-                                <th>操作</th>
+                                <th style="width: 40px;">序</th>
+                                <th style="width: 130px;">產品代碼</th>
+                                <th>產品名稱</th>
+                                <th style="width: 80px;">分類</th>
+                                <th style="width: 60px;">總庫</th>
+                                <th style="width: 60px;">存量</th>
+                                <th style="width: 50px;">單位</th>
+                                <th style="width: 70px;">數量</th>
+                                <th style="width: 90px;">單價</th>
+                                <th style="width: 100px;">小計</th>
                             </tr>
                         </thead>
-                        <tbody id="checkout-list"></tbody>
+                        <tbody id="sales-item-table-body">
+                            <!-- 資料動態生成 -->
+                        </tbody>
                     </table>
                 </div>
 
-                <div style="margin-top: 20px; text-align: right; font-size: 22px; font-weight: bold;">
-                    總計金額：<span id="checkout-total" style="color: #ef4444;">$0</span>
-                    <span id="fee-note" style="font-size: 14px; color: #6b7280; font-weight: normal; margin-left: 10px;"></span>
-                </div>
-                <div style="margin-top: 15px; text-align: right;">
-                    <button class="btn btn-success" style="font-size: 18px; padding: 12px 30px;" onclick="submitCheckout()">確認結帳並存檔</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-receive" class="content-area">
-            <div class="card">
-                <h2>商品進貨作業 (更新庫存與成本)</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>刷條碼/自編碼搜尋</label>
-                        <input type="text" id="receive-scan" placeholder="請刷條碼並按 Enter..." onkeypress="handleReceiveScan(event)">
+                <!-- 下方會計加總金流欄位 -->
+                <div class="summary-footer-area">
+                    <div>
+                        <div class="form-group" style="margin-bottom:4px;"><label>銷貨額</label><input type="text" id="summary-subtotal" value="0.00" readonly></div>
+                        <div class="form-group" style="margin-bottom:4px;"><label>稅 額</label><input type="text" value="0.00" readonly></div>
+                        <div class="form-group"><label>合 計</label><input type="text" id="summary-total" value="0.00" readonly style="color:red; font-weight:bold;"></div>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>商品名稱 (唯讀)</label>
-                        <input type="text" id="receive-name" readonly style="background: #f3f4f6;">
-                    </div>
-                    <div class="form-group">
-                        <label>目前雲端庫存</label>
-                        <input type="text" id="receive-old-stock" readonly style="background: #f3f4f6;">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>進貨數量</label>
-                        <input type="number" id="receive-qty" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>進貨單價 (成本)</label>
-                        <input type="number" id="receive-cost" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label>最新零售價 (售價)</label>
-                        <input type="number" id="receive-price" value="0">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="submitReceive()">確認商品進貨</button>
-            </div>
-        </div>
-
-        <div id="tab-create" class="content-area">
-            <div class="sub-tabs">
-                <button class="sub-tab active" onclick="switchSubTab('create','single')">1. 線上單筆建立</button>
-                <button class="sub-tab" onclick="switchSubTab('create','batch')">2. Excel 表格批次建立</button>
-            </div>
-
-            <div id="sub-create-single" class="sub-content active">
-                <div class="card">
-                    <h2>新增單筆商品基本資料</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>國際條碼 (必填/唯一鍵)</label>
-                            <input type="text" id="p-barcode">
-                        </div>
-                        <div class="form-group">
-                            <label>自編碼 (選填)</label>
-                            <input type="text" id="p-custom">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex:2;">
-                            <label>商品名稱</label>
-                            <input type="text" id="p-name">
-                        </div>
-                        <div class="form-group">
-                            <label>商品分類</label>
-                            <input type="text" id="p-type" placeholder="例如：公仔、盲盒">
-                        </div>
-                        <div class="form-group">
-                            <label>售價</label>
-                            <input type="number" id="p-price" value="0">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="submitSingleCreate()">確認單筆建檔</button>
-                </div>
-            </div>
-
-            <div id="sub-create-batch" class="sub-content">
-                <div class="card">
-                    <h2>從 Excel 貼上大批商品資料</h2>
-                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
-                        請在 Excel 整理好欄位，順序必須為：<strong>條碼 | 自編碼 | 商品名稱 | 分類 | 售價 | 初始進價</strong><br>
-                        複製整塊資料，並直接貼在下方大框框中（欄位間會自動以 Tab 鍵隔開）：
-                    </p>
-                    <textarea id="batch-paste-area" rows="12" style="width: 100%; font-family: monospace; padding: 10px; margin-bottom: 15px;" placeholder="例如貼上：&#10;471001&#9;A01&#9;超級賽亞人公仔&#9;玩具&#9;500&#9;300&#10;471002&#9;A02&#9;庫柏力克熊盲盒&#9;盲盒&#9;350&#9;200"></textarea>
-                    <button class="btn btn-success" onclick="processBatchCreate()">解析並批量送往雲端建檔</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-peer" class="content-area">
-            <div class="sub-tabs">
-                <button class="sub-tab active" onclick="switchSubTab('peer','manage')">1. 同行代碼與名稱建立</button>
-                <button class="sub-tab" onclick="switchSubTab('peer','adj')">2. 同行調貨作業</button>
-            </div>
-
-            <div id="sub-peer-manage" class="sub-content active">
-                <div class="card">
-                    <h2>建立同行基本名單</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>同行簡短代碼 (例如：P01)</label>
-                            <input type="text" id="peer-code">
-                        </div>
-                        <div class="form-group" style="flex:2;">
-                            <label>同行商店/老闆名稱</label>
-                            <input type="text" id="peer-name">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="submitPeerAdd()">新增/更新同行資料</button>
-                </div>
-            </div>
-
-            <div id="sub-peer-adj" class="sub-content">
-                <div class="card">
-                    <h2>同行調貨多排清單作業</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>選擇同行商店</label>
-                            <select id="peer-select-dropdown"><option value="">--請選擇同行--</option></select>
-                        </div>
-                        <div class="form-group">
-                            <label>調貨類型</label>
-                            <select id="peer-adj-type">
-                                <option value="調入">調入 (增加我方庫存)</option>
-                                <option value="調出">調出 (減少我方庫存)</option>
+                    <div>
+                        <div class="form-group" style="margin-bottom:4px;">
+                            <label>付款 1</label>
+                            <select id="pay-method-1" onchange="recalculatePricesWithFee()" disabled>
+                                <option value="現金">現金</option>
+                                <option value="轉帳">轉帳</option>
+                                <option value="信用卡">信用卡</option>
+                                <option value="悠遊卡">悠遊卡</option>
+                                <option value="LINE Pay">LINE Pay</option>
+                                <option value="橘子支付">橘子支付</option>
                             </select>
                         </div>
+                        <div class="form-group" style="margin-bottom:4px;"><label>付款 2</label><input type="text" readonly></div>
+                        <div class="form-group"><label>付款 3</label><input type="text" value="折讓" readonly></div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
-                            <label>刷調貨商品條碼</label>
-                            <input type="text" id="peer-scan" placeholder="刷條碼並按 Enter..." onkeypress="handlePeerScan(event)">
-                        </div>
+                    <div>
+                        <div class="form-group" style="margin-bottom:4px;"><label>總數量</label><input type="text" id="summary-total-qty" value="0" readonly></div>
+                        <div class="form-group" style="margin-bottom:4px;"><label>折 讓</label><input type="text" value="0" readonly></div>
+                        <div class="form-group"><label>應 收</label><input type="text" id="summary-payable" value="0.00" readonly style="background:#000; color:#00ff00; font-family:monospace; font-size:16px; font-weight:bold;"></div>
                     </div>
+                </div>
 
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>商品名稱</th>
-                                    <th>條碼</th>
-                                    <th style="width: 120px;">調貨數量</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="peer-adj-list"></tbody>
-                        </table>
-                    </div>
-                    <button class="btn btn-success" style="margin-top: 15px;" onclick="submitPeerAdjustment()">確認調貨並同步雲端庫存</button>
+                <!-- 底部經典功能按鈕列 (對應畫面2、3) -->
+                <div class="action-button-bar">
+                    <button class="act-btn" id="btn-first" onclick="navBill('first')">極頭</button>
+                    <button class="act-btn" id="btn-prev" onclick="navBill('prev')">上筆</button>
+                    <button class="act-btn" id="btn-next" onclick="navBill('next')">下筆</button>
+                    <button class="act-btn" id="btn-last" onclick="navBill('last')">極尾</button>
+                    <button class="act-btn disabled">查詢</button>
+                    <button class="act-btn disabled">列印</button>
+                    <button class="act-btn" id="btn-add" onclick="clickAddInvoice()" style="color:brown;">新增</button>
+                    <button class="act-btn disabled" id="btn-modify">修改</button>
+                    <button class="act-btn disabled" id="btn-delete">刪除</button>
+                    <button class="act-btn" id="btn-save" onclick="clickSaveInvoice()" style="color:green;">儲存</button>
+                    <button class="act-btn" id="btn-cancel" onclick="clickCancelInvoice()">放棄</button>
+                    <button class="act-btn" onclick="closeSalesScreen()" style="color:red;">離開</button>
                 </div>
             </div>
-        </div>
 
-        <div id="tab-report" class="content-area">
-            <div class="card">
-                <h2>今日營業與利潤統計報表</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>選擇查詢日期</label>
-                        <input type="date" id="report-date" onchange="loadReport()">
-                    </div>
-                </div>
-                <div class="form-row" style="margin-top: 20px;">
-                    <div class="card" style="flex:1; background: #eff6ff; text-align: center;">
-                        <h3 style="color:#1e40af;">今日營業額</h3>
-                        <p id="rep-revenue" style="font-size: 28px; font-weight: bold; margin-top:10px;">$0</p>
-                    </div>
-                    <div class="card" style="flex:1; background: #ecfdf5; text-align: center;">
-                        <h3 style="color:#065f46;">今日純利潤 (毛利)</h3>
-                        <p id="rep-profit" style="font-size: 28px; font-weight: bold; margin-top:10px; color:#10b981;">$0</p>
-                    </div>
-                    <div class="card" style="flex:1; background: #f9fafb; text-align: center;">
-                        <h3 style="color:#374151;">成交單數 / 總件數</h3>
-                        <p id="rep-orders" style="font-size: 20px; font-weight: bold; margin-top:10px;">0 單 / 0 件</p>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        <div id="tab-emp" class="content-area">
-            <div class="card">
-                <h2>註冊新員工收銀帳號</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>新員工編號 (登入帳號)</label>
-                        <input type="text" id="new-emp-id">
-                    </div>
-                    <div class="form-group">
-                        <label>登入密碼</label>
-                        <input type="password" id="new-emp-password">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="submitAddEmployee()">建立員工帳號</button>
-            </div>
-        </div>
-    </main>
+    </div>
 
     <script>
-        let currentEmployee = null;
-        let checkoutCart = [];
-        let peerCart = [];
+        // 系統安全防護與模擬歷史資料庫
+        let siteUnlocked = false;
+        let loggedInStaff = "";
+        
+        // 模擬歷史銷售資料庫 (用來實現 畫面2 的「上筆/下筆」翻閱效果)
+        let mockDatabase = [
+            {
+                sheet_id: "115070533",
+                date: "0115/07/12",
+                staff: "0001",
+                customer: "零售",
+                shipment: "店面直接購買",
+                payment: "現金",
+                items: [
+                    { barcode: "471001", name: "超級賽亞人公仔", type: "玩具", stock: 12, unit: "盒", qty: 1, basePrice: 990 }
+                ]
+            },
+            {
+                sheet_id: "115070534",
+                date: "0115/07/13",
+                staff: "0001",
+                customer: "零售",
+                shipment: "蝦皮",
+                payment: "LINE Pay", // 會自動算1.03
+                items: [
+                    { barcode: "471002", name: "庫柏力克熊盲盒", type: "盲盒", stock: 5, unit: "片", qty: 1, basePrice: 1890 },
+                    { barcode: "471001", name: "超級賽亞人公仔", type: "玩具", stock: 11, unit: "盒", qty: 1, basePrice: 990 }
+                ]
+            }
+        ];
 
-        // 頁面初始化與安全驗證
+        let currentRecordIndex = 1; // 預設停在最新的歷史單據
+        let isAddingMode = false;   // 判斷是否按下了「新增」進入畫面 3
+        let newCartItems = [];      // 新增模式下的即時購物車
+
+        // 1. 環境安全驗證
         function verifySiteAccess() {
             const pw = document.getElementById('site-password').value;
-            if (pw === 'Pipi25508846') { 
+            if (pw === 'Pipi25508846') {
+                siteUnlocked = true;
                 document.getElementById('site-auth-overlay').style.display = 'none';
                 document.getElementById('login-overlay').style.display = 'flex';
             } else {
-                alert('通關密碼錯誤！請重新確認。');
+                alert('網站通關密碼錯誤！');
             }
         }
 
-        function login() {
-            const id = document.getElementById('emp-id').value;
+        // 2. 員工代號登入
+        function loginSystem() {
+            const id = document.getElementById('emp-id').value.trim();
             const pw = document.getElementById('emp-password').value;
-            fetch('/api/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ emp_id: id, password: pw })
-            })
-            .then(res => {
-                if(!res.ok) throw new Error('帳號密碼錯誤');
-                return res.json();
-            })
-            .then(data => {
-                currentEmployee = data.employee.emp_id;
-                document.getElementById('user-info').innerText = `操作人員：${currentEmployee}`;
+            if (id && pw) {
+                loggedInStaff = id;
+                document.getElementById('current-user-span').innerText = id;
+                document.getElementById('form-staff').value = id;
                 document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('report-date').value = new Date().toISOString().split('T')[0];
-                loadPeerDropdown();
-                loadReport();
-            })
-            .catch(err => alert(err.message));
-        }
-
-        // 分頁切換器
-        function switchTab(tabId) {
-            document.querySelectorAll('.content-area').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            const navId = tabId.replace('tab-', 'nav-');
-            if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
-        }
-
-        function switchSubTab(parent, subKey) {
-            document.querySelectorAll(`#tab-${parent} .sub-tab`).forEach(el => el.classList.remove('active'));
-            document.querySelectorAll(`#tab-${parent} .sub-content`).forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(`sub-${parent}-${subKey}`).classList.add('active');
-        }
-
-        // === 收銀結帳邏輯 ===
-        function handleCheckoutScan(e) {
-            if(e.key !== 'Enter') return;
-            const code = e.target.value.trim();
-            if(!code) return;
-            e.target.value = '';
-
-            fetch(`/api/product/search?code=${code}`)
-            .then(res => res.json())
-            .then(data => {
-                if(!data.success) { alert(data.message); return; }
-                const prod = data.product;
-                const exist = checkoutCart.find(item => item.barcode === prod.barcode);
-                if(exist) {
-                    exist.qty++;
-                    exist.subtotal = exist.qty * exist.price;
-                } else {
-                    checkoutCart.push({
-                        name: prod.name, barcode: prod.barcode, price: prod.price, qty: 1, subtotal: prod.price
-                    });
-                }
-                renderCheckoutCart();
-            });
-        }
-
-        function renderCheckoutCart() {
-            const tbody = document.getElementById('checkout-list');
-            tbody.innerHTML = '';
-            let subtotalSum = 0;
-            
-            checkoutCart.forEach((item, index) => {
-                subtotalSum += item.subtotal;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.barcode}</td>
-                        <td>$${item.price}</td>
-                        <td><input type="number" value="${item.qty}" min="1" style="width:70px;" onchange="updateCartQty(${index}, this.value)"></td>
-                        <td>$${item.subtotal}</td>
-                        <td><button class="btn btn-danger" onclick="removeCartItem(${index})">刪除</button></td>
-                    </tr>
-                `;
-            });
-
-            // 讀取當前付款方式
-            const paymentMethod = document.getElementById('checkout-payment').value;
-            let finalTotal = subtotalSum;
-            const noteEl = document.getElementById('fee-note');
-
-            // 只有「信用卡」、「LINE Pay」、「橘子支付」要乘以 1.03
-            if (paymentMethod === '信用卡' || paymentMethod === 'LINE Pay' || paymentMethod === '橘子支付') {
-                finalTotal = Math.round(subtotalSum * 1.03);
-                noteEl.innerText = `(原價 $${subtotalSum} + 3% 手續費)`;
             } else {
-                // 現金、轉帳維持原價
-                noteEl.innerText = '';
+                alert('請完整輸入員工帳號與密碼！');
+            }
+        }
+
+        // 開啟銷貨管理作業畫面 (畫面 1 -> 畫面 2)
+        function openSalesScreen() {
+            document.getElementById('main-menu-screen').style.display = 'none';
+            document.getElementById('sales-screen').style.display = 'flex';
+            isAddingMode = false;
+            showRecord();
+        }
+
+        // 關閉回到主選單
+        function closeSalesScreen() {
+            document.getElementById('sales-screen').style.display = 'none';
+            document.getElementById('main-menu-screen').style.display = 'block';
+        }
+
+        // 渲染指定銷售紀錄 (瀏覽模式 - 畫面 2)
+        function showRecord() {
+            if (mockDatabase.length === 0) return;
+            const record = mockDatabase[currentRecordIndex];
+            
+            // 填入表單欄位
+            document.getElementById('form-sheet-id').value = record.sheet_id;
+            document.getElementById('form-date').value = record.date;
+            document.getElementById('form-staff').value = record.staff;
+            document.getElementById('form-customer').value = record.customer;
+            document.getElementById('form-shipment').value = record.shipment;
+            document.getElementById('pay-method-1').value = record.payment;
+
+            // 鎖定輸入欄位
+            document.getElementById('barcode-scanner-input').disabled = true;
+            document.getElementById('barcode-scanner-input').style.backgroundColor = "#e0e0e0";
+            document.getElementById('form-shipment').disabled = true;
+            document.getElementById('pay-method-1').disabled = true;
+
+            // 渲染表格資料
+            renderTableRows(record.items, record.payment);
+            
+            // 更新導覽按鈕狀態
+            document.getElementById('btn-first').classList.remove('disabled');
+            document.getElementById('btn-prev').classList.remove('disabled');
+            document.getElementById('btn-next').classList.remove('disabled');
+            document.getElementById('btn-last').classList.remove('disabled');
+        }
+
+        // 翻頁導覽控制
+        function navBill(action) {
+            if (isAddingMode) return; // 新增模式中不能翻頁
+            if (action === 'first') currentRecordIndex = 0;
+            if (action === 'last') currentRecordIndex = mockDatabase.length - 1;
+            if (action === 'prev' && currentRecordIndex > 0) currentRecordIndex--;
+            if (action === 'next' && currentRecordIndex < mockDatabase.length - 1) currentRecordIndex++;
+            showRecord();
+        }
+
+        // 按下【新增】按鈕 (進入畫面 3：全部清空，進入編輯)
+        function clickAddInvoice() {
+            isAddingMode = true;
+            newCartItems = [];
+            
+            // 清空並解鎖欄位
+            document.getElementById('form-sheet-id').value = "自動編號中...";
+            document.getElementById('form-date').value = "0115/07/14";
+            document.getElementById('form-shipment').disabled = false;
+            document.getElementById('pay-method-1').disabled = false;
+            document.getElementById('pay-method-1').value = "現金"; // 預設現金
+            
+            // 啟用條碼輸入區
+            const scanner = document.getElementById('barcode-scanner-input');
+            scanner.disabled = false;
+            scanner.style.backgroundColor = "#ffffff";
+            scanner.value = "";
+            scanner.focus();
+
+            // 禁用翻頁按鈕
+            document.getElementById('btn-first').classList.add('disabled');
+            document.getElementById('btn-prev').classList.add('disabled');
+            document.getElementById('btn-next').classList.add('disabled');
+            document.getElementById('btn-last').classList.add('disabled');
+
+            // 渲染空的表格
+            renderTableRows([], "現金");
+        }
+
+        // 處理條碼刷入
+        function handleBarcodeScan(e) {
+            if (e.key !== 'Enter') return;
+            const code = e.target.value.trim();
+            if (!code) return;
+            e.target.value = "";
+
+            // 模擬向雲端商品庫搜尋
+            let foundProd = {
+                barcode: code,
+                name: code === "471001" ? "超級賽亞人公仔" : (code === "471002" ? "庫柏力克熊盲盒" : "雲端自編新產品"),
+                type: "公仔",
+                stock: 99,
+                unit: "盒",
+                basePrice: code === "471001" ? 990 : (code === "471002" ? 1890 : 500)
+            };
+
+            // 檢查是否已在購物車中
+            const exist = newCartItems.find(item => item.barcode === foundProd.barcode);
+            if (exist) {
+                exist.qty++;
+            } else {
+                newCartItems.push({
+                    barcode: foundProd.barcode,
+                    name: foundProd.name,
+                    type: foundProd.type,
+                    stock: foundProd.stock,
+                    unit: foundProd.unit,
+                    qty: 1,
+                    basePrice: foundProd.basePrice
+                });
             }
 
-            document.getElementById('checkout-total').innerText = `$${finalTotal}`;
+            const currentPayment = document.getElementById('pay-method-1').value;
+            renderTableRows(newCartItems, currentPayment);
         }
 
-        function updateCartQty(index, val) {
-            const qty = parseInt(val) || 1;
-            checkoutCart[index].qty = qty;
-            checkoutCart[index].subtotal = qty * checkoutCart[index].price;
-            renderCheckoutCart();
+        // 切換付款方式時，即時重新計算手續費
+        function recalculatePricesWithFee() {
+            if (!isAddingMode) return;
+            const currentPayment = document.getElementById('pay-method-1').value;
+            renderTableRows(newCartItems, currentPayment);
         }
 
-        function removeCartItem(index) {
-            checkoutCart.splice(index, 1);
-            renderCheckoutCart();
-        }
-
-        function submitCheckout() {
-            if(checkoutCart.length === 0) { alert('購物車內沒有商品！'); return; }
-            const paymentMethod = document.getElementById('checkout-payment').value;
-            
-            fetch('/api/sales/checkout', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    emp_id: currentEmployee,
-                    payment_method: paymentMethod,
-                    items: checkoutCart
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert('🎉 雲端結帳成功！');
-                checkoutCart = [];
-                renderCheckoutCart();
-                loadReport();
-            });
-        }
-
-        // === 商品進貨邏輯 ===
-        function handleReceiveScan(e) {
-            if(e.key !== 'Enter') return;
-            const code = e.target.value.trim();
-            fetch(`/api/product/search?code=${code}`)
-            .then(res => res.json())
-            .then(data => {
-                if(!data.success) { alert('找不到商品！請先至「建立商品」區建檔。'); return; }
-                const prod = data.product;
-                document.getElementById('receive-name').value = prod.name;
-                document.getElementById('receive-old-stock').value = prod.stock;
-                document.getElementById('receive-price').value = prod.price;
-                document.getElementById('receive-cost').value = prod.avg_cost;
-                document.getElementById('receive-qty').focus();
-            });
-        }
-
-        function submitReceive() {
-            const code = document.getElementById('receive-scan').value.trim();
-            const qty = document.getElementById('receive-qty').value;
-            const cost = document.getElementById('receive-cost').value;
-            const price = document.getElementById('receive-price').value;
-            
-            fetch('/api/product/receive', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ barcode: code, quantity: qty, cost: cost, price: price })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                document.getElementById('receive-scan').value = '';
-                document.getElementById('receive-name').value = '';
-                document.getElementById('receive-old-stock').value = '';
-                document.getElementById('receive-qty').value = '0';
-                document.getElementById('receive-cost').value = '0';
-                document.getElementById('receive-price').value = '0';
-            });
-        }
-
-        // === 商品建檔邏輯 ===
-        function submitSingleCreate() {
-            const prod = {
-                barcode: document.getElementById('p-barcode').value.trim(),
-                custom_code: document.getElementById('p-custom').value.trim(),
-                name: document.getElementById('p-name').value.trim(),
-                type: document.getElementById('p-type').value.trim(),
-                price: parseFloat(document.getElementById('p-price').value) || 0
-            };
-            if(!prod.barcode || !prod.name) { alert('條碼與商品名稱為必填欄位！'); return; }
-            
-            fetch('/api/product/create', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ products: [prod] })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                document.getElementById('p-barcode').value = '';
-                document.getElementById('p-custom').value = '';
-                document.getElementById('p-name').value = '';
-                document.getElementById('p-type').value = '';
-                document.getElementById('p-price').value = '0';
-            });
-        }
-
-        function processBatchCreate() {
-            const text = document.getElementById('batch-paste-area').value.trim();
-            if(!text) { alert('請貼上 Excel 資料！'); return; }
-            const lines = text.split('\n');
-            const products = [];
-            
-            lines.forEach(line => {
-                const cols = line.split('\t'); 
-                if(cols.length >= 3) {
-                    products.push({
-                        barcode: cols[0]?.trim(),
-                        custom_code: cols[1]?.trim() || '',
-                        name: cols[2]?.trim(),
-                        type: cols[3]?.trim() || '一般',
-                        price: parseFloat(cols[4]) || 0,
-                        cost: parseFloat(cols[5]) || 0
-                    });
-                }
-            });
-            
-            if(products.length === 0) { alert('解析失敗，請確認格式是否符合 條碼 | 自編碼 | 名稱'); return; }
-            
-            fetch('/api/product/create', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ products: products })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                document.getElementById('batch-paste-area').value = '';
-            });
-        }
-
-        // === 同行管理與多排調貨邏輯 ===
-        function submitPeerAdd() {
-            const code = document.getElementById('peer-code').value.trim();
-            const name = document.getElementById('peer-name').value.trim();
-            if(!code || !name) { alert('代碼與名稱不能為空'); return; }
-            
-            fetch('/api/peers/add', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ peer_code: code, peer_name: name })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                document.getElementById('peer-code').value = '';
-                document.getElementById('peer-name').value = '';
-                loadPeerDropdown();
-            });
-        }
-
-        function loadPeerDropdown() {
-            fetch('/api/peers/list')
-            .then(res => res.json())
-            .then(data => {
-                const drop = document.getElementById('peer-select-dropdown');
-                drop.innerHTML = '<option value="">--請選擇同行--</option>';
-                data.peers.forEach(p => {
-                    drop.innerHTML += `<option value="${p.peer_code}">${p.peer_code} - ${p.peer_name}</option>`;
-                });
-            });
-        }
-
-        function handlePeerScan(e) {
-            if(e.key !== 'Enter') return;
-            const code = e.target.value.trim();
-            if(!code) return;
-            e.target.value = '';
-            
-            fetch(`/api/product/search?code=${code}`)
-            .then(res => res.json())
-            .then(data => {
-                if(!data.success) { alert('找不到此商品！'); return; }
-                const prod = data.product;
-                const exist = peerCart.find(item => item.barcode === prod.barcode);
-                if(exist) exist.qty++;
-                else peerCart.push({ name: prod.name, barcode: prod.barcode, qty: 1 });
-                renderPeerCart();
-            });
-        }
-
-        function renderPeerCart() {
-            const tbody = document.getElementById('peer-adj-list');
+        // 核心渲染與 1.03 倍手續費計算引擎
+        function renderTableRows(items, paymentMethod) {
+            const tbody = document.getElementById('sales-item-table-body');
             tbody.innerHTML = '';
-            peerCart.forEach((item, index) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.barcode}</td>
-                        <td><input type="number" value="${item.qty}" min="1" style="width:80px;" onchange="peerCart[index].qty = parseInt(this.value)||1"></td>
-                        <td><button class="btn btn-danger" onclick="peerCart.splice(${index},1); renderPeerCart();">刪除</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function submitPeerAdjustment() {
-            const pCode = document.getElementById('peer-select-dropdown').value;
-            const type = document.getElementById('peer-adj-type').value;
-            if(!pCode) { alert('請選擇同行對象！'); return; }
-            if(peerCart.length === 0) { alert('調貨清單不能為空！'); return; }
             
-            fetch('/api/peer/adjustment', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ peer_code: pCode, type: type, items: peerCart })
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert('🤝 同行調貨雲端同步完成！');
-                peerCart = [];
-                renderPeerCart();
-            });
+            // 判斷是否需要乘以 1.03
+            const needFee = (paymentMethod === '信用卡' || paymentMethod === '悠遊卡' || paymentMethod === 'LINE Pay' || paymentMethod === '橘子支付');
+            
+            let totalAmount = 0;
+            let totalQty = 0;
+
+            // 填滿 8 排（保持跟畫面一樣的固定表格排數美觀）
+            const displayRowCount = Math.max(items.length, 8);
+
+            for (let i = 0; i < displayRowCount; i++) {
+                const item = items[i];
+                if (item) {
+                    // 計算單價與小計：若是卡片/行動支付，精準乘以 1.03 並四捨五入
+                    const finalPrice = needFee ? Math.round(item.basePrice * 1.03) : item.basePrice;
+                    const subtotal = finalPrice * item.qty;
+                    
+                    totalAmount += subtotal;
+                    totalQty += item.qty;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${item.barcode}</td>
+                            <td>${item.name}</td>
+                            <td>${item.type}</td>
+                            <td class="yellow-col">${item.stock}</td>
+                            <td>${item.stock - item.qty}</td>
+                            <td>${item.unit}</td>
+                            <td>${item.qty}</td>
+                            <td>$${finalPrice}</td>
+                            <td style="font-weight:bold;">$${subtotal}</td>
+                        </tr>
+                    `;
+                } else {
+                    // 空白留白行
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${i + 1}</td> <td></td> <td></td> <td></td> <td class="yellow-col"></td> <td></td> <td></td> <td></td> <td></td> <td></td>
+                        </tr>
+                    `;
+                }
+            }
+
+            // 更新下方金額看板
+            document.getElementById('summary-subtotal').value = totalAmount.toFixed(2);
+            document.getElementById('summary-total').value = totalAmount.toFixed(2);
+            document.getElementById('summary-total-qty').value = totalQty;
+            document.getElementById('summary-payable').value = `$ ${totalAmount.toLocaleString()}`;
         }
 
-        // === 營業報表邏輯 ===
-        function loadReport() {
-            const date = document.getElementById('report-date').value;
-            fetch(`/api/reports/summary?date=${date}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('rep-revenue').innerText = `$${data.total_revenue}`;
-                document.getElementById('rep-profit').innerText = `$${data.total_profit}`;
-                document.getElementById('rep-orders').innerText = `${data.total_orders} 單 / ${data.total_qty} 件`;
+        // 按下【儲存】存檔
+        function clickSaveInvoice() {
+            if (!isAddingMode) { alert("請先點擊 [新增] 開始一筆新結帳！"); return; }
+            if (newCartItems.length === 0) { alert("購物車內無商品，無法儲存！"); return; }
+
+            const finalPayment = document.getElementById('pay-method-1').value;
+            const nextId = "115070" + (534 + mockDatabase.length);
+            
+            // 將新訂單存入雲端模擬資料庫
+            mockDatabase.push({
+                sheet_id: nextId,
+                date: "0115/07/14",
+                staff: loggedInStaff || "PIPI",
+                customer: "零售",
+                shipment: document.getElementById('form-shipment').value,
+                payment: finalPayment,
+                items: [...newCartItems]
             });
+
+            alert(`🎉 銷貨單 ${nextId} 雲端同步儲存成功！`);
+            isAddingMode = false;
+            currentRecordIndex = mockDatabase.length - 1; // 跳到剛剛存好的這筆
+            showRecord();
         }
 
-        // === 註冊員工帳號 ===
-        function submitAddEmployee() {
-            const id = document.getElementById('new-emp-id').value.trim();
-            const pw = document.getElementById('new-emp-password').value;
-            fetch('/api/employees/add', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ emp_id: id, password: pw })
-            })
-            .then(res => res.json())
-            .then(data => { alert(data.message); });
+        // 按下【放棄】
+        function clickCancelInvoice() {
+            if (!isAddingMode) return;
+            if (confirm("確定放棄目前輸入的所有結帳資料嗎？")) {
+                isAddingMode = false;
+                showRecord();
+            }
         }
     </script>
 </body>
